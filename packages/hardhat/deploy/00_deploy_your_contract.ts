@@ -4,18 +4,18 @@ export default deployScript(
   async env => {
     const { deployer } = env.namedAccounts;
 
-    const trusticToken = await env.deploy("TrusticToken", {
+    const michiCoin = await env.deploy("MichiCoin", {
       account: deployer,
-      artifact: artifacts.TrusticToken,
+      artifact: artifacts.MichiCoin,
       // Sin argumentos: Ownable(msg.sender) ya usa al deployer
       args: [],
     });
 
-    const name = await env.read(trusticToken, { functionName: "name" });
-    const symbol = await env.read(trusticToken, { functionName: "symbol" });
+    const name = await env.read(michiCoin, { functionName: "name" });
+    const symbol = await env.read(michiCoin, { functionName: "symbol" });
     console.log(`🪙 Deployed: ${name} (${symbol})`);
   },
   {
-    tags: ["TrusticToken"],
+    tags: ["MichiCoin"],
   },
 );

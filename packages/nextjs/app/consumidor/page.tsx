@@ -101,21 +101,18 @@ const ConsumerDashboard: NextPage = () => {
               <div>
                 <h3 className="text-sm font-semibold">Al comprar en locales</h3>
                 <p className="mt-1 text-sm text-base-content/70">
-                  Ganas automáticamente un porcentaje de tu compra en MichiPoints (ej. 10%) directo a tu wallet en
-                  Arbitrum.
+                  El cajero registra tu compra y te asigna MichiPoints según el monto gastado (por ejemplo, 1 punto por cada S/1 o el monto redondeado).
                 </p>
               </div>
               <div>
                 <h3 className="text-sm font-semibold">Al pagar con MichiPoints</h3>
                 <p className="mt-1 text-sm text-base-content/70">
-                  Paga con tus MichiPoints en cualquier negocio afiliado de la red de forma instantánea y sin
-                  comisiones.
+                  Usa tus MichiPoints para canjear Beneficios de los comercios afiliados.
                 </p>
               </div>
             </div>
             <p className="mt-4 rounded-lg bg-secondary px-3 py-2 text-xs text-secondary-content">
-              1 MichiPoint = 1 Sol al momento de pagar. Un café de S/10 cuesta exactamente 10 MichiPoints. Reglas
-              claras.
+              Después de cada compra, el comercio te asigna MichiPoints equivalentes al monto de tu compra (o al valor redondeado según sus reglas).
             </p>
           </section>
         </div>

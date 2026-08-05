@@ -8,7 +8,7 @@ import { useAccount } from "wagmi";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth";
 
 const NAV_LINKS = [
-  { href: "/consumidor", label: "MichiExchange" },
+  { href: "/consumidor", label: "Michi Home" },
   { href: "/consumidor/beneficios", label: "Michi Beneficios" },
 ];
 
@@ -43,7 +43,7 @@ export function ConsumerHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <span className="badge badge-outline badge-sm hidden sm:inline-flex">{targetNetwork.name}</span>
+          {/*<span className="badge badge-outline badge-sm hidden sm:inline-flex">{targetNetwork.name}</span>*/}
           <Link
             href="/consumidor/tickets"
             aria-label="Mis Tickets y Canjes"

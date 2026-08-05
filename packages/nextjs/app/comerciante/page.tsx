@@ -172,7 +172,7 @@ const MerchantDashboard: NextPage = () => {
   const resolvedSaleAddress = directory.resolve(saleIdentifier);
   const resolvedChargeAddress = directory.resolve(chargeIdentifier);
 
-  const rate = rewardRate ?? 10n;
+  const rate = rewardRate ?? 1n;
   const saleReward = saleAmount ? BigInt(Math.max(0, Math.floor(Number(saleAmount)))) * rate : 0n;
   const chargeTotal = chargeAmount ? BigInt(Math.max(0, Math.floor(Number(chargeAmount)))) : 0n;
 

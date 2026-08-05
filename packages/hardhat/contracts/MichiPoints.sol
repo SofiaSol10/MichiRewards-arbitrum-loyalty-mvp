@@ -5,8 +5,8 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract MichiPoints is ERC20, Ownable {
-    uint256 public rewardRate = 10;
-    // 10 tokens por cada unidad monetaria
+    uint256 public rewardRate = 1;
+    // 1 MichiPoint por cada unidad monetaria (relación 1:1)
 
     mapping(address => bool) public merchants;
 

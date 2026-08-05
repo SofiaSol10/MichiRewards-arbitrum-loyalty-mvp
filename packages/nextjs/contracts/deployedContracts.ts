@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     MichiPoints: {
-      address: "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+      address: "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
       abi: [
         {
           inputs: [],
@@ -600,7 +600,7 @@ const deployedContracts = {
         renounceOwnership: "npm/@openzeppelin/contracts@5.6.1/access/Ownable.sol",
         transferOwnership: "npm/@openzeppelin/contracts@5.6.1/access/Ownable.sol",
       },
-      deployedOnBlock: 1,
+      deployedOnBlock: 2,
     },
   },
 } as const;

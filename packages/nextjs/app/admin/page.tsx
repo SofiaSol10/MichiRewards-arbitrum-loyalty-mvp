@@ -595,7 +595,7 @@ const Admin: NextPage = () => {
                   className="input input-bordered w-full"
                   value={newRewardRate}
                   onChange={e => setNewRewardRate(e.target.value)}
-                  placeholder={`Actual: ${rewardRate?.toString() ?? "10"}`}
+                  placeholder={`Actual: ${rewardRate?.toString() ?? "1"}`}
                 />
                 <button
                   className="btn btn-warning btn-sm w-full gap-1"

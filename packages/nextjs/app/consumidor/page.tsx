@@ -12,14 +12,14 @@ const ConsumerDashboard: NextPage = () => {
   const { address: connectedAddress, isConnected } = useAccount();
 
   const { data: balance } = useScaffoldReadContract({
-    contractName: "MichiCoin",
+    contractName: "MichiPoints",
     functionName: "balanceOf",
     args: [connectedAddress],
   });
 
   return (
     <MichiShell>
-      <MichiBrand subtitle="Tus MichiCoins, en un solo lugar." />
+      <MichiBrand subtitle="Tus MichiPoints, en un solo lugar." />
 
       <section className="mt-6 rounded-xl bg-base-200 p-4 text-center sm:p-5">
         {isConnected ? (
@@ -29,14 +29,14 @@ const ConsumerDashboard: NextPage = () => {
               <SparklesIcon className="size-7" aria-hidden="true" />
               {balance !== undefined ? Number(formatEther(balance)).toLocaleString("es-PE") : "0"}
             </p>
-            <p className="mt-1 text-sm text-base-content/70">MichiCoin(s)</p>
+            <p className="mt-1 text-sm text-base-content/70">MichiPoints</p>
             <p className="mt-4 text-xs text-base-content/50">
-              Pronto vas a poder usar tus MichiCoins directamente desde acá.
+              Pronto vas a poder usar tus MichiPoints directamente desde acá.
             </p>
           </>
         ) : (
           <>
-            <p className="mb-4 text-sm text-base-content/70">Conecta tu wallet para ver tu saldo de MichiCoins.</p>
+            <p className="mb-4 text-sm text-base-content/70">Conecta tu wallet para ver tu saldo de MichiPoints.</p>
             <div className="flex justify-center">
               <RainbowKitCustomConnectButton />
             </div>

@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract MichiCoin is ERC20, Ownable {
+contract MichiPoints is ERC20, Ownable {
     uint256 public rewardRate = 10;
     // 10 tokens por cada unidad monetaria
 
@@ -17,7 +17,7 @@ contract MichiCoin is ERC20, Ownable {
 
     event RewardRedeemed(address merchant, address customer, uint256 amount);
 
-    constructor() ERC20("MichiCoin", "MCHI") Ownable(msg.sender) {}
+    constructor() ERC20("MichiPoints", "MCHI") Ownable(msg.sender) {}
 
     modifier onlyMerchant() {
         require(merchants[msg.sender], "Not authorized merchant");

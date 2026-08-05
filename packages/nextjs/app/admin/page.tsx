@@ -50,84 +50,84 @@ const Admin: NextPage = () => {
 
   // Contract Reads
   const { data: name } = useScaffoldReadContract({
-    contractName: "MichiCoin",
+    contractName: "MichiPoints",
     functionName: "name",
   });
 
   const { data: symbol } = useScaffoldReadContract({
-    contractName: "MichiCoin",
+    contractName: "MichiPoints",
     functionName: "symbol",
   });
 
   const { data: rewardRate } = useScaffoldReadContract({
-    contractName: "MichiCoin",
+    contractName: "MichiPoints",
     functionName: "rewardRate",
   });
 
   const { data: ownerAddress } = useScaffoldReadContract({
-    contractName: "MichiCoin",
+    contractName: "MichiPoints",
     functionName: "owner",
   });
 
   const { data: totalSupply } = useScaffoldReadContract({
-    contractName: "MichiCoin",
+    contractName: "MichiPoints",
     functionName: "totalSupply",
   });
 
   const { data: connectedUserBalance, refetch: refetchConnectedBalance } = useScaffoldReadContract({
-    contractName: "MichiCoin",
+    contractName: "MichiPoints",
     functionName: "balanceOf",
     args: [connectedAddress],
   });
 
   const { data: isConnectedUserMerchant, refetch: refetchIsMerchant } = useScaffoldReadContract({
-    contractName: "MichiCoin",
+    contractName: "MichiPoints",
     functionName: "merchants",
     args: [connectedAddress],
   });
 
   // Query custom address
   const { data: searchedBalance } = useScaffoldReadContract({
-    contractName: "MichiCoin",
+    contractName: "MichiPoints",
     functionName: "balanceOf",
     args: [searchAddress],
   });
 
   const { data: isSearchedMerchant } = useScaffoldReadContract({
-    contractName: "MichiCoin",
+    contractName: "MichiPoints",
     functionName: "merchants",
     args: [searchAddress],
   });
 
   // Contract Writes
-  const { writeContractAsync: writeMichiCoin, isPending } = useScaffoldWriteContract({
-    contractName: "MichiCoin",
+  const { writeContractAsync: writeMichiPoints, isPending } = useScaffoldWriteContract({
+    contractName: "MichiPoints",
   });
 
   // Events
   const { data: mintedEvents, isLoading: isMintedLoading } = useScaffoldEventHistory({
-    contractName: "MichiCoin",
+    contractName: "MichiPoints",
     eventName: "RewardMinted",
     watch: true,
     fromBlock: 0n,
   });
 
   const { data: redeemedEvents, isLoading: isRedeemedLoading } = useScaffoldEventHistory({
-    contractName: "MichiCoin",
+    contractName: "MichiPoints",
     eventName: "RewardRedeemed",
     watch: true,
     fromBlock: 0n,
   });
 
   const { data: registeredEvents, isLoading: isRegisteredLoading } = useScaffoldEventHistory({
-    contractName: "MichiCoin",
+    contractName: "MichiPoints",
     eventName: "MerchantRegistered",
     watch: true,
     fromBlock: 0n,
   });
 
   const { data: removedEvents } = useScaffoldEventHistory({
-    contractName: "MichiCoin",
+    contractName: "MichiPoints",
     eventName: "MerchantRemoved",
     watch: true,
     fromBlock: 0n,
@@ -142,7 +142,7 @@ const Admin: NextPage = () => {
       return;
     }
     try {
-      await writeMichiCoin({
+      await writeMichiPoints({
         functionName: "transfer",
         args: [transferRecipient, parseEther(transferAmount)],
       });
@@ -160,7 +160,7 @@ const Admin: NextPage = () => {
       return;
     }
     try {
-      await writeMichiCoin({
+      await writeMichiPoints({
         functionName: "mintRewardToken",
         args: [mintCustomerAddress, BigInt(mintPurchaseAmount)],
       });
@@ -178,7 +178,7 @@ const Admin: NextPage = () => {
       return;
     }
     try {
-      await writeMichiCoin({
+      await writeMichiPoints({
         functionName: "burnRewardToken",
         args: [burnCustomerAddress, BigInt(burnAmount)],
       });
@@ -196,7 +196,7 @@ const Admin: NextPage = () => {
       return;
     }
     try {
-      await writeMichiCoin({
+      await writeMichiPoints({
         functionName: "registerMerchant",
         args: [regMerchantAddress],
       });
@@ -214,7 +214,7 @@ const Admin: NextPage = () => {
       return;
     }
     try {
-      await writeMichiCoin({
+      await writeMichiPoints({
         functionName: "removeMerchant",
         args: [removeMerchantAddress],
       });
@@ -232,7 +232,7 @@ const Admin: NextPage = () => {
       return;
     }
     try {
-      await writeMichiCoin({
+      await writeMichiPoints({
         functionName: "updateRewardRate",
         args: [BigInt(newRewardRate)],
       });
@@ -255,7 +255,7 @@ const Admin: NextPage = () => {
               <SparklesIcon className="w-4 h-4" /> Smart Contract Dashboard
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-              {name ?? "Michi Coin"} ({symbol ?? "MCHI"})
+              {name ?? "Michi Points"} ({symbol ?? "MCHI"})
             </h1>
             <p className="text-sm opacity-90 max-w-xl">
               Sistema descentralizado de fidelización y recompensas para comercios y clientes.
@@ -533,8 +533,8 @@ const Admin: NextPage = () => {
               <div>
                 <h3 className="font-bold">Acceso de Administrador Recomendado</h3>
                 <div className="text-xs">
-                  Tu billetera conectada no es el <code>owner</code> de <code>MichiCoin</code>. Las siguientes funciones
-                  sólo funcionarán si utilizas la cuenta Owner.
+                  Tu billetera conectada no es el <code>owner</code> de <code>MichiPoints</code>. Las siguientes
+                  funciones sólo funcionarán si utilizas la cuenta Owner.
                 </div>
               </div>
             </div>

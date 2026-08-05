@@ -18,7 +18,7 @@ const ConnectWallet: NextPage = () => {
   const { address: connectedAddress, isConnected } = useAccount();
 
   const { data: isMerchant, isFetched: isMerchantFetched } = useScaffoldReadContract({
-    contractName: "MichiCoin",
+    contractName: "MichiPoints",
     functionName: "merchants",
     args: [connectedAddress],
   });

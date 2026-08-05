@@ -6,7 +6,7 @@ import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 
 export const metadata = getMetadata({
   title: "Michi Rewards — Elige tu rol",
-  description: "Entra a Michi Rewards como comerciante o consumidor y convierte cada compra en MichiCoins.",
+  description: "Entra a Michi Rewards como comerciante o consumidor y convierte cada compra en MichiPoints.",
 });
 
 const Home: NextPage = () => {

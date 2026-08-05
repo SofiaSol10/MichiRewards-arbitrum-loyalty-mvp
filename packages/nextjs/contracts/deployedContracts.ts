@@ -6,7 +6,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
 const deployedContracts = {
   31337: {
-    MichiCoin: {
+    MichiPoints: {
       address: "0x5fbdb2315678afecb367f032d93f642f64180aa3",
       abi: [
         {

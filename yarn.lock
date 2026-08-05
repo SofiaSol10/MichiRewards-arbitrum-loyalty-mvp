@@ -15923,6 +15923,7 @@ __metadata:
   dependencies:
     husky: "npm:~9.1.6"
     lint-staged: "npm:~13.2.2"
+    lucide-react: "npm:^1.27.0"
   languageName: unknown
   linkType: soft
 

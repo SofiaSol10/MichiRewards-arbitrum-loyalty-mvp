@@ -4,9 +4,7 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @title MichiPoints
-/// @notice Sistema de puntos de fidelizacion NO transferible.
-///         No hereda ERC20 a proposito: sin transfer/approve no puede
-///         existir mercado secundario ni especulacion sobre el punto.
+/// @notice Sistema de puntos de fidelizacion
 contract MichiPoints is Ownable {
     string public constant name = "MichiPoints";
     string public constant symbol = "MCHI";
@@ -33,7 +31,7 @@ contract MichiPoints is Ownable {
         merchants[msg.sender] = true;
         emit MerchantRegistered(msg.sender);
 
-        // 1000 MichiPoints iniciales de cortesia para el owner
+        // 1000 MichiPoints iniciales de cortesia para el owner (test)
         uint256 initial = 1000 * 10 ** decimals;
         balanceOf[msg.sender] = initial;
         totalSupply = initial;

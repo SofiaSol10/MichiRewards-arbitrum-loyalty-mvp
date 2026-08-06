@@ -253,9 +253,6 @@ const MerchantDashboard: NextPage = () => {
     }
   };
 
-  const handleLiquidate = () => {
-    notification.info("La liquidación de puntos a moneda fiat estará disponible próximamente.");
-  };
 
   if (!isConnected) {
     return (
@@ -361,12 +358,9 @@ const MerchantDashboard: NextPage = () => {
               <section className="card border-2 border-info bg-base-100 p-4 text-sm shadow-sm">
                 <h2 className="font-semibold">Puntos Recibidos (Canjes)</h2>
                 <p className="mt-1 text-3xl font-bold text-info">{totalRedeemed.toLocaleString()} pts</p>
-                <p className="mt-1 text-xs text-base-content/60">Listos para canjear/retirar</p>
               </section>
 
-              <button type="button" className="btn btn-neutral w-full" onClick={handleLiquidate}>
-                Liquidar / Exchange
-              </button>
+        
             </div>
 
             <div className="space-y-5 sm:space-y-6">

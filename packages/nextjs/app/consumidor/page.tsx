@@ -103,12 +103,6 @@ const ConsumerDashboard: NextPage = () => {
             </h2>
             <p className="mt-2 text-4xl font-bold tabular-nums sm:text-5xl">{balanceNumber.toLocaleString("es-PE")}</p>
             <p className="mt-1 text-sm opacity-90">MichiPoint(s)</p>
-            <div className="mt-4 inline-flex items-center gap-2 rounded-xl bg-black/10 px-4 py-2 text-sm">
-              <span className="opacity-80">Poder Adquisitivo</span>
-              <span className="font-bold">
-                S/ {balanceNumber.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
-              </span>
-            </div>
           </section>
 
           <section className="card border border-base-300 bg-base-100 p-4 shadow-sm sm:p-5">
@@ -158,11 +152,13 @@ const ConsumerDashboard: NextPage = () => {
             <progress className="progress progress-primary w-full" value={progressPct} max={100} />
             <div className="mt-1 flex justify-between text-xs text-base-content/50">
               <span>{currentLevel.mpRequired.toLocaleString("es-PE")} MP</span>
+              <span className="font-semibold text-primary">
+                {totalPointsEarnedNumber.toLocaleString("es-PE")} MP acumulados
+              </span>
               <span>{(nextLevel ?? currentLevel).mpRequired.toLocaleString("es-PE")} MP</span>
             </div>
           </div>
         </section>
-
         <section className="mt-5">
           <div className="flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-sm font-bold">
@@ -193,13 +189,12 @@ const ConsumerDashboard: NextPage = () => {
               return (
                 <div
                   key={level.level}
-                  className={`card flex flex-col items-center gap-1 border p-3 text-center ${
-                    isCurrent
-                      ? "border-primary bg-primary/10"
-                      : reached
-                        ? "border-success/40 bg-success/5"
-                        : "border-base-300 bg-base-100 opacity-60"
-                  }`}
+                  className={`card flex flex-col items-center gap-1 border p-3 text-center ${isCurrent
+                    ? "border-primary bg-primary/10"
+                    : reached
+                      ? "border-success/40 bg-success/5"
+                      : "border-base-300 bg-base-100 opacity-60"
+                    }`}
                 >
                   <span className="text-2xl">{level.icon}</span>
                   <p className="text-xs font-semibold">{level.title}</p>

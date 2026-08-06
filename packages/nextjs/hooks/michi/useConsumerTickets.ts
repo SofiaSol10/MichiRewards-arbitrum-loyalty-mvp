@@ -1,7 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import type { Offer } from "./useConsumerOffers";
+import { useMemo } from "react";
+import { decodeEventLog } from "viem";
+import { usePublicClient } from "wagmi";
+import { useDeployedContractInfo, useScaffoldEventHistory, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import type { OnchainReward } from "./useOnchainRewards";
 
 export type TicketStatus = "active" | "redeemed" | "expired";
 
@@ -17,15 +20,10 @@ export type Ticket = {
   usedAt?: number;
 };
 
-const TICKET_TTL_MS = 15 * 60 * 1000;
+export const TICKET_TTL_MS = 15 * 60 * 1000;
 
-const storageKey = (address?: string) => `michi:tickets:${address?.toLowerCase() ?? "anon"}`;
-
-function generateCode() {
-  const alphanum = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  const pick = (n: number) =>
-    Array.from({ length: n }, () => alphanum[Math.floor(Math.random() * alphanum.length)]).join("");
-  return `MCH-${pick(4)}-${pick(1)}`;
+function shortAddress(address: string) {
+  return `${address.slice(0, 6)}…${address.slice(-4)}`;
 }
 
 export function getTicketStatus(ticket: Ticket, now = Date.now()): TicketStatus {
@@ -35,111 +33,94 @@ export function getTicketStatus(ticket: Ticket, now = Date.now()): TicketStatus 
 }
 
 /**
- * Redemption tickets, persisted in localStorage per consumer address. There
- * is no on-chain redemption/coupon primitive for consumers yet
- * (MichiPoints.burnRewardToken is onlyMerchant), so "Canjear ahora" just
- * creates a ticket here instead of sending a transaction.
+ * Real redemption tickets, sourced from `TicketGenerated`/`TicketValidated` on-chain
+ * events (there is now a real on-chain redemption primitive, `redeemReward` +
+ * `validateTicket`, so nothing here is persisted locally anymore).
  */
 export function useConsumerTickets(address?: string) {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const { data: generatedEvents } = useScaffoldEventHistory({
+    contractName: "MichiPoints",
+    eventName: "TicketGenerated",
+    watch: true,
+    fromBlock: 0n,
+  });
+  const { data: validatedEvents } = useScaffoldEventHistory({
+    contractName: "MichiPoints",
+    eventName: "TicketValidated",
+    watch: true,
+    fromBlock: 0n,
+  });
 
-  useEffect(() => {
-    if (!address) {
-      setTickets([]);
-      return;
-    }
-    try {
-      const raw = localStorage.getItem(storageKey(address));
-      if (raw) {
-        setTickets(JSON.parse(raw));
-      } else {
-        const seeded = seedDemoTickets();
-        setTickets(seeded);
-        localStorage.setItem(storageKey(address), JSON.stringify(seeded));
-      }
-    } catch {
-      setTickets([]);
-    }
-  }, [address]);
+  const { writeContractAsync } = useScaffoldWriteContract({ contractName: "MichiPoints" });
+  const { data: deployedContractData } = useDeployedContractInfo({ contractName: "MichiPoints" });
+  const publicClient = usePublicClient();
 
-  const persist = useCallback(
-    (next: Ticket[]) => {
-      setTickets(next);
-      if (address) localStorage.setItem(storageKey(address), JSON.stringify(next));
-    },
-    [address],
+  const redeemedIds = useMemo(
+    () => new Set((validatedEvents ?? []).map(evt => evt.args.ticketId?.toLowerCase())),
+    [validatedEvents],
   );
 
-  const createTicket = useCallback(
-    (offer: Offer) => {
-      const now = Date.now();
-      const ticket: Ticket = {
-        id: crypto.randomUUID(),
-        code: generateCode(),
-        offerId: offer.id,
-        merchantName: offer.merchantName,
-        offerTitle: offer.title,
-        costMP: offer.costMP,
-        createdAt: now,
-        expiresAt: now + TICKET_TTL_MS,
-      };
-      persist([ticket, ...tickets]);
-      return ticket;
-    },
-    [tickets, persist],
-  );
+  const tickets = useMemo((): Ticket[] => {
+    return (generatedEvents ?? [])
+      .filter(evt => evt.args.customer?.toLowerCase() === address?.toLowerCase())
+      .map(evt => {
+        const expiresAtMs = Number(evt.args.expiresAt ?? 0n) * 1000;
+        const ticketId = evt.args.ticketId?.toLowerCase();
+        return {
+          id: evt.args.ticketId ?? "",
+          code: evt.args.code ?? "",
+          offerId: evt.args.rewardId?.toString() ?? "",
+          merchantName: shortAddress(evt.args.merchant ?? ""),
+          offerTitle: "Beneficio canjeado",
+          costMP: evt.args.pointsSpent !== undefined ? Number(evt.args.pointsSpent) : null,
+          createdAt: expiresAtMs - TICKET_TTL_MS,
+          expiresAt: expiresAtMs,
+          usedAt: ticketId && redeemedIds.has(ticketId) ? expiresAtMs : undefined,
+        };
+      })
+      .reverse();
+  }, [generatedEvents, address, redeemedIds]);
 
   const byStatus = (status: TicketStatus) => tickets.filter(t => getTicketStatus(t) === status);
 
-  return { tickets, createTicket, byStatus };
-}
+  const redeem = async (offer: OnchainReward): Promise<Ticket> => {
+    if (!deployedContractData || !publicClient) throw new Error("Contrato no disponible todavía");
 
-function seedDemoTickets(): Ticket[] {
-  const now = Date.now();
-  const hours = (n: number) => n * 60 * 60 * 1000;
-  const days = (n: number) => n * 24 * 60 * 60 * 1000;
+    const hash = await writeContractAsync({ functionName: "redeemReward", args: [offer.id] });
+    if (!hash) throw new Error("La transacción no se envió");
+    const receipt = await publicClient.waitForTransactionReceipt({ hash });
 
-  return [
-    {
-      id: crypto.randomUUID(),
-      code: "MCH-8X92-A",
-      offerId: "el-gato-barista",
-      merchantName: "El Gato Barista",
-      offerTitle: "Combo Desayuno",
-      costMP: 25,
-      createdAt: now - 1000 * 60 * 2,
-      expiresAt: now - 1000 * 60 * 2 + TICKET_TTL_MS,
-    },
-    {
-      id: crypto.randomUUID(),
-      code: "SPA-991B-Z",
-      offerId: "zen-spa",
-      merchantName: "Zen Spa & Relax",
-      offerTitle: "Cupón 15% Cashback",
-      costMP: null,
-      createdAt: now - 1000 * 60 * 8,
-      expiresAt: now - 1000 * 60 * 8 + TICKET_TTL_MS,
-    },
-    ...Array.from({ length: 5 }, (_, i) => ({
-      id: crypto.randomUUID(),
-      code: generateCode(),
-      offerId: "trattoria-del-michi",
-      merchantName: i % 2 === 0 ? "La Trattoria del Michi" : "Café Central",
-      offerTitle: "Canje anterior",
-      costMP: i % 2 === 0 ? 150 : null,
-      createdAt: now - days(i + 1),
-      expiresAt: now - days(i + 1) + TICKET_TTL_MS,
-      usedAt: now - days(i + 1) + 1000 * 60 * 5,
-    })),
-    {
-      id: crypto.randomUUID(),
-      code: generateCode(),
-      offerId: "sweet-pastry-club",
-      merchantName: "Sweet Pastry Club",
-      offerTitle: "Cupón 20% Cashback",
-      costMP: null,
-      createdAt: now - days(3),
-      expiresAt: now - days(3) + TICKET_TTL_MS,
-    },
-  ];
+    for (const log of receipt.logs) {
+      try {
+        const decoded = decodeEventLog({ abi: deployedContractData.abi, data: log.data, topics: log.topics });
+        if (decoded.eventName === "TicketGenerated") {
+          const args = decoded.args as {
+            ticketId: string;
+            code: string;
+            customer: string;
+            merchant: string;
+            rewardId: bigint;
+            pointsSpent: bigint;
+            expiresAt: bigint;
+          };
+          const expiresAtMs = Number(args.expiresAt) * 1000;
+          return {
+            id: args.ticketId,
+            code: args.code,
+            offerId: args.rewardId.toString(),
+            merchantName: shortAddress(args.merchant),
+            offerTitle: offer.title,
+            costMP: Number(args.pointsSpent),
+            createdAt: expiresAtMs - TICKET_TTL_MS,
+            expiresAt: expiresAtMs,
+          };
+        }
+      } catch {
+        // Not a decodable MichiPoints log (or a different event) — skip it.
+      }
+    }
+    throw new Error("No se encontró el evento TicketGenerated en el recibo de la transacción");
+  };
+
+  return { tickets, byStatus, redeem };
 }

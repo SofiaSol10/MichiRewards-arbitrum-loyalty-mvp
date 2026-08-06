@@ -3,16 +3,13 @@
 import { useState } from "react";
 import { Address, AddressInput } from "@scaffold-ui/components";
 import type { NextPage } from "next";
-import { formatEther, parseEther } from "viem";
 import { useAccount } from "wagmi";
 import {
-  ArrowRightOnRectangleIcon,
-  BanknotesIcon,
   BuildingStorefrontIcon,
+  CheckBadgeIcon,
   CheckCircleIcon,
   ClockIcon,
   Cog6ToothIcon,
-  FireIcon,
   PlusCircleIcon,
   ShieldCheckIcon,
   SparklesIcon,
@@ -35,30 +32,17 @@ const Admin: NextPage = () => {
 
   // Form states
   const [searchAddress, setSearchAddress] = useState<string>("");
-  const [transferRecipient, setTransferRecipient] = useState<string>("");
-  const [transferAmount, setTransferAmount] = useState<string>("");
 
   const [mintCustomerAddress, setMintCustomerAddress] = useState<string>("");
   const [mintPurchaseAmount, setMintPurchaseAmount] = useState<string>("");
 
-  const [burnCustomerAddress, setBurnCustomerAddress] = useState<string>("");
-  const [burnAmount, setBurnAmount] = useState<string>("");
+  const [ticketCode, setTicketCode] = useState<string>("");
 
   const [regMerchantAddress, setRegMerchantAddress] = useState<string>("");
   const [removeMerchantAddress, setRemoveMerchantAddress] = useState<string>("");
   const [newRewardRate, setNewRewardRate] = useState<string>("");
 
   // Contract Reads
-  const { data: name } = useScaffoldReadContract({
-    contractName: "MichiPoints",
-    functionName: "name",
-  });
-
-  const { data: symbol } = useScaffoldReadContract({
-    contractName: "MichiPoints",
-    functionName: "symbol",
-  });
-
   const { data: rewardRate } = useScaffoldReadContract({
     contractName: "MichiPoints",
     functionName: "rewardRate",
@@ -67,11 +51,6 @@ const Admin: NextPage = () => {
   const { data: ownerAddress } = useScaffoldReadContract({
     contractName: "MichiPoints",
     functionName: "owner",
-  });
-
-  const { data: totalSupply } = useScaffoldReadContract({
-    contractName: "MichiPoints",
-    functionName: "totalSupply",
   });
 
   const { data: connectedUserBalance, refetch: refetchConnectedBalance } = useScaffoldReadContract({
@@ -105,16 +84,16 @@ const Admin: NextPage = () => {
   });
 
   // Events
-  const { data: mintedEvents, isLoading: isMintedLoading } = useScaffoldEventHistory({
+  const { data: purchaseEvents, isLoading: isPurchaseLoading } = useScaffoldEventHistory({
     contractName: "MichiPoints",
-    eventName: "RewardMinted",
+    eventName: "PurchaseRegistered",
     watch: true,
     fromBlock: 0n,
   });
 
-  const { data: redeemedEvents, isLoading: isRedeemedLoading } = useScaffoldEventHistory({
+  const { data: validatedEvents, isLoading: isValidatedLoading } = useScaffoldEventHistory({
     contractName: "MichiPoints",
-    eventName: "RewardRedeemed",
+    eventName: "TicketValidated",
     watch: true,
     fromBlock: 0n,
   });
@@ -136,24 +115,6 @@ const Admin: NextPage = () => {
   const isOwner = connectedAddress && ownerAddress && connectedAddress.toLowerCase() === ownerAddress.toLowerCase();
 
   // Handlers
-  const handleTransfer = async () => {
-    if (!transferRecipient || !transferAmount) {
-      notification.error("Por favor completa la dirección y el monto a transferir.");
-      return;
-    }
-    try {
-      await writeMichiPoints({
-        functionName: "transfer",
-        args: [transferRecipient, parseEther(transferAmount)],
-      });
-      notification.success("Transferencia realizada con éxito");
-      setTransferAmount("");
-      refetchConnectedBalance();
-    } catch (e: any) {
-      console.error("Error al transferir tokens:", e);
-    }
-  };
-
   const handleMintReward = async () => {
     if (!mintCustomerAddress || !mintPurchaseAmount) {
       notification.error("Por favor ingresa la dirección del cliente y el monto de compra.");
@@ -161,32 +122,31 @@ const Admin: NextPage = () => {
     }
     try {
       await writeMichiPoints({
-        functionName: "mintRewardToken",
+        functionName: "registerPurchase",
         args: [mintCustomerAddress, BigInt(mintPurchaseAmount)],
       });
       notification.success("Recompensa acreditada correctamente");
       setMintPurchaseAmount("");
       refetchConnectedBalance();
     } catch (e: any) {
-      console.error("Error al mintear recompensa:", e);
+      console.error("Error al registrar la compra:", e);
     }
   };
 
-  const handleBurnReward = async () => {
-    if (!burnCustomerAddress || !burnAmount) {
-      notification.error("Por favor ingresa la dirección del cliente y los tokens a canjear.");
+  const handleValidateTicket = async () => {
+    if (!ticketCode.trim()) {
+      notification.error("Por favor ingresa el código del ticket a validar.");
       return;
     }
     try {
       await writeMichiPoints({
-        functionName: "burnRewardToken",
-        args: [burnCustomerAddress, BigInt(burnAmount)],
+        functionName: "validateTicket",
+        args: [ticketCode.trim()],
       });
-      notification.success("Tokens canjeados y quemados exitosamente");
-      setBurnAmount("");
-      refetchConnectedBalance();
+      notification.success("Ticket validado exitosamente");
+      setTicketCode("");
     } catch (e: any) {
-      console.error("Error al quemar tokens:", e);
+      console.error("Error al validar el ticket:", e);
     }
   };
 
@@ -254,9 +214,7 @@ const Admin: NextPage = () => {
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-base-100/20 backdrop-blur-md rounded-full text-xs font-semibold uppercase tracking-wider">
               <SparklesIcon className="w-4 h-4" /> Smart Contract Dashboard
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-              {name ?? "Michi Points"} ({symbol ?? "MCHI"})
-            </h1>
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">MichiPoints</h1>
             <p className="text-sm opacity-90 max-w-xl">
               Sistema descentralizado de fidelización y recompensas para comercios y clientes.
             </p>
@@ -266,12 +224,6 @@ const Admin: NextPage = () => {
             <div className="bg-base-100/20 backdrop-blur-md p-4 rounded-2xl text-center min-w-[130px]">
               <span className="block text-xs uppercase opacity-80 font-bold">Tasa Recompensa</span>
               <span className="text-2xl font-black">{rewardRate ? rewardRate.toString() : "0"} x1</span>
-            </div>
-            <div className="bg-base-100/20 backdrop-blur-md p-4 rounded-2xl text-center min-w-[130px]">
-              <span className="block text-xs uppercase opacity-80 font-bold">Suministro Total</span>
-              <span className="text-2xl font-black">
-                {totalSupply !== undefined ? Number(formatEther(totalSupply)).toLocaleString() : "0"}
-              </span>
             </div>
           </div>
         </div>
@@ -290,7 +242,7 @@ const Admin: NextPage = () => {
           <div className="flex items-center gap-2">
             <span className="font-semibold">Mi Balance:</span>
             <span className="font-mono font-bold text-base bg-base-100/30 px-3 py-1 rounded-lg">
-              {connectedUserBalance !== undefined ? formatEther(connectedUserBalance) : "0"} MCHI
+              {connectedUserBalance !== undefined ? connectedUserBalance.toString() : "0"} MCHI
             </span>
           </div>
 
@@ -354,44 +306,14 @@ const Admin: NextPage = () => {
 
       {/* Tab 1: Mi Cuenta */}
       {activeTab === "account" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
-          {/* Transfer Token Card */}
-          <div className="card bg-base-100 shadow-xl border border-base-300 rounded-3xl p-6 space-y-4">
-            <h2 className="card-title text-xl font-bold flex items-center gap-2">
-              <BanknotesIcon className="w-6 h-6 text-primary" /> Transferir Tokens MCHI
-            </h2>
-            <p className="text-xs text-base-content/70">
-              Envía tokens de recompensa MCHI a cualquier otra dirección Ethereum.
-            </p>
-            <div className="space-y-3">
-              <div>
-                <label className="label text-xs font-semibold">Dirección Destinatario</label>
-                <AddressInput value={transferRecipient} onChange={setTransferRecipient} placeholder="0x..." />
-              </div>
-              <div>
-                <label className="label text-xs font-semibold">Cantidad MCHI</label>
-                <input
-                  type="number"
-                  step="any"
-                  className="input input-bordered w-full"
-                  placeholder="ej. 10.5"
-                  value={transferAmount}
-                  onChange={e => setTransferAmount(e.target.value)}
-                />
-              </div>
-              <button className="btn btn-primary w-full gap-2 mt-2" onClick={handleTransfer} disabled={isPending}>
-                <ArrowRightOnRectangleIcon className="w-5 h-5" /> Enviar MCHI
-              </button>
-            </div>
-          </div>
-
+        <div className="w-full max-w-5xl">
           {/* Search Balance / Status Card */}
-          <div className="card bg-base-100 shadow-xl border border-base-300 rounded-3xl p-6 space-y-4">
+          <div className="card bg-base-100 shadow-xl border border-base-300 rounded-3xl p-6 space-y-4 max-w-xl mx-auto">
             <h2 className="card-title text-xl font-bold flex items-center gap-2">
               <UserIcon className="w-6 h-6 text-secondary" /> Consulta de Usuario / Comercio
             </h2>
             <p className="text-xs text-base-content/70">
-              Inspecciona el balance de MCHI y el estado de comercio autorizado de cualquier dirección.
+              Inspecciona el saldo de MichiPoints y el estado de comercio autorizado de cualquier dirección.
             </p>
             <div className="space-y-3">
               <div>
@@ -401,9 +323,9 @@ const Admin: NextPage = () => {
               {searchAddress ? (
                 <div className="bg-base-200 p-4 rounded-2xl space-y-2 mt-4 text-sm">
                   <div className="flex justify-between items-center">
-                    <span className="font-semibold text-xs">Balance MCHI:</span>
+                    <span className="font-semibold text-xs">Saldo MichiPoints:</span>
                     <span className="font-mono font-bold text-primary">
-                      {searchedBalance !== undefined ? formatEther(searchedBalance) : "0"} MCHI
+                      {searchedBalance !== undefined ? searchedBalance.toString() : "0"} pts
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -439,7 +361,7 @@ const Admin: NextPage = () => {
                 <h3 className="font-bold">Aviso para Comercios</h3>
                 <div className="text-xs">
                   Tu billetera conectada no está registrada como comercio en este contrato. Las llamadas a{" "}
-                  <code>mintRewardToken</code> y <code>burnRewardToken</code> requieren autorización del Owner.
+                  <code>registerPurchase</code> y <code>validateTicket</code> requieren autorización del Owner.
                 </div>
               </div>
             </div>
@@ -472,8 +394,8 @@ const Admin: NextPage = () => {
                 </div>
 
                 <div className="bg-base-200 p-3 rounded-xl flex justify-between items-center text-xs font-semibold">
-                  <span>Tokens a Emitir:</span>
-                  <span className="text-base font-bold text-success">{calculatedReward.toString()} MCHI</span>
+                  <span>Puntos a Otorgar:</span>
+                  <span className="text-base font-bold text-success">{calculatedReward.toString()} pts</span>
                 </div>
 
                 <button
@@ -486,37 +408,32 @@ const Admin: NextPage = () => {
               </div>
             </div>
 
-            {/* Burn Reward Card */}
+            {/* Validate Ticket Card */}
             <div className="card bg-base-100 shadow-xl border border-base-300 rounded-3xl p-6 space-y-4">
               <h2 className="card-title text-xl font-bold flex items-center gap-2 text-error">
-                <FireIcon className="w-6 h-6" /> Canjear / Quemar Tokens (Burn)
+                <CheckBadgeIcon className="w-6 h-6" /> Validar Ticket de Canje
               </h2>
               <p className="text-xs text-base-content/70">
-                Reducir o quemar tokens MCHI del cliente al hacer efectivo un premio o beneficio.
+                Ingresa el código de ticket que el cliente muestra en caja para completar un canje de beneficio.
               </p>
               <div className="space-y-3">
                 <div>
-                  <label className="label text-xs font-semibold">Dirección Cliente</label>
-                  <AddressInput value={burnCustomerAddress} onChange={setBurnCustomerAddress} placeholder="0x..." />
-                </div>
-                <div>
-                  <label className="label text-xs font-semibold">Cantidad de Tokens MCHI a Canjear</label>
+                  <label className="label text-xs font-semibold">Código del Ticket</label>
                   <input
-                    type="number"
-                    min="0"
-                    className="input input-bordered w-full"
-                    value={burnAmount}
-                    onChange={e => setBurnAmount(e.target.value)}
-                    placeholder="ej. 50"
+                    type="text"
+                    className="input input-bordered w-full uppercase"
+                    value={ticketCode}
+                    onChange={e => setTicketCode(e.target.value)}
+                    placeholder="MCH-XXXX-X"
                   />
                 </div>
 
                 <button
                   className="btn btn-error text-white w-full gap-2 mt-6"
-                  onClick={handleBurnReward}
+                  onClick={handleValidateTicket}
                   disabled={isPending}
                 >
-                  <FireIcon className="w-5 h-5" /> Quemar / Canjear Tokens
+                  <CheckBadgeIcon className="w-5 h-5" /> Validar Ticket
                 </button>
               </div>
             </div>
@@ -619,14 +536,14 @@ const Admin: NextPage = () => {
             </h2>
 
             <div className="space-y-6">
-              {/* Minted Events */}
+              {/* Purchase Events */}
               <div>
                 <h3 className="font-bold text-sm text-success mb-2 flex items-center gap-1">
-                  <SparklesIcon className="w-4 h-4" /> Recompensas Otorgadas (RewardMinted)
+                  <SparklesIcon className="w-4 h-4" /> Compras Registradas (PurchaseRegistered)
                 </h3>
-                {isMintedLoading ? (
+                {isPurchaseLoading ? (
                   <span className="loading loading-spinner loading-sm"></span>
-                ) : mintedEvents && mintedEvents.length > 0 ? (
+                ) : purchaseEvents && purchaseEvents.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="table table-xs w-full bg-base-200 rounded-xl">
                       <thead>
@@ -635,39 +552,39 @@ const Admin: NextPage = () => {
                           <th>Comercio</th>
                           <th>Cliente</th>
                           <th>Monto Compra</th>
-                          <th>Recompensa (MCHI)</th>
+                          <th>Puntos</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {mintedEvents.map((evt, idx) => (
+                        {purchaseEvents.map((evt, idx) => (
                           <tr key={idx}>
                             <td className="font-mono">{evt.blockNumber?.toString()}</td>
                             <td>
                               <Address address={evt.args.merchant} />
                             </td>
                             <td>
-                              <Address address={evt.args.customer} />
+                              <Address address={evt.args.user} />
                             </td>
-                            <td className="font-mono">{evt.args.purchaseAmount?.toString()}</td>
-                            <td className="font-mono font-bold text-success">{evt.args.reward?.toString()} MCHI</td>
+                            <td className="font-mono">{evt.args.amount?.toString()}</td>
+                            <td className="font-mono font-bold text-success">{evt.args.points?.toString()} pts</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
                 ) : (
-                  <p className="text-xs opacity-60 italic">No hay eventos de recompensa registrados aún.</p>
+                  <p className="text-xs opacity-60 italic">No hay compras registradas aún.</p>
                 )}
               </div>
 
-              {/* Redeemed Events */}
+              {/* Ticket Validated Events */}
               <div>
                 <h3 className="font-bold text-sm text-error mb-2 flex items-center gap-1">
-                  <FireIcon className="w-4 h-4" /> Canjes Realizados (RewardRedeemed)
+                  <CheckBadgeIcon className="w-4 h-4" /> Canjes Validados (TicketValidated)
                 </h3>
-                {isRedeemedLoading ? (
+                {isValidatedLoading ? (
                   <span className="loading loading-spinner loading-sm"></span>
-                ) : redeemedEvents && redeemedEvents.length > 0 ? (
+                ) : validatedEvents && validatedEvents.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="table table-xs w-full bg-base-200 rounded-xl">
                       <thead>
@@ -675,11 +592,11 @@ const Admin: NextPage = () => {
                           <th>Bloque</th>
                           <th>Comercio</th>
                           <th>Cliente</th>
-                          <th>Monto Quemado</th>
+                          <th>Ticket</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {redeemedEvents.map((evt, idx) => (
+                        {validatedEvents.map((evt, idx) => (
                           <tr key={idx}>
                             <td className="font-mono">{evt.blockNumber?.toString()}</td>
                             <td>
@@ -688,14 +605,14 @@ const Admin: NextPage = () => {
                             <td>
                               <Address address={evt.args.customer} />
                             </td>
-                            <td className="font-mono font-bold text-error">{evt.args.amount?.toString()} MCHI</td>
+                            <td className="font-mono text-xs">{evt.args.ticketId?.slice(0, 10)}…</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
                 ) : (
-                  <p className="text-xs opacity-60 italic">No hay eventos de canje registrados aún.</p>
+                  <p className="text-xs opacity-60 italic">No hay canjes validados aún.</p>
                 )}
               </div>
 

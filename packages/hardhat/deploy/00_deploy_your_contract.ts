@@ -11,14 +11,12 @@ export default deployScript(
       args: [],
     });
 
-    const name = await env.read(michiPoints, { functionName: "name" });
-    const symbol = await env.read(michiPoints, { functionName: "symbol" });
     const owner = await env.read(michiPoints, { functionName: "owner" });
-    const balance = await env.read(michiPoints, { functionName: "balanceOf", args: [deployer] });
+    const isMerchant = await env.read(michiPoints, { functionName: "merchants", args: [deployer] });
 
-    console.log(`🪙 Deployed: ${name} (${symbol}) at ${michiPoints.address}`);
+    console.log(`🪙 Deployed: MichiPoints at ${michiPoints.address}`);
     console.log(`👑 Owner (Account #0): ${owner}`);
-    console.log(`🐱 Initial balance of Account #0: ${balance.toString()} wei (1000 MCHI)`);
+    console.log(`🏪 Account #0 registered as merchant: ${isMerchant}`);
   },
   {
     tags: ["MichiPoints"],

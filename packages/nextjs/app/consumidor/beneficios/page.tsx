@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
 import type { NextPage } from "next";
-import { formatEther } from "viem";
 import { useAccount } from "wagmi";
 import { ConsumerHeader } from "~~/components/michi/ConsumerHeader";
 import { OfferCard } from "~~/components/michi/OfferCard";
@@ -11,34 +9,37 @@ import { RedeemConfirmModal } from "~~/components/michi/RedeemConfirmModal";
 import { TicketCodeModal } from "~~/components/michi/TicketCodeModal";
 import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import {
-  CATEGORY_LABELS,
   MICHI_PET_LEVELS,
   type Offer,
-  type OfferCategory,
   type Ticket,
+  useAllRewards,
   useConsumerOffers,
   useConsumerPetLevel,
   useConsumerTickets,
 } from "~~/hooks/michi";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
-import { notification } from "~~/utils/scaffold-eth";
-
-const CATEGORIES: ("todos" | OfferCategory)[] = ["todos", "cafeteria", "restaurante", "servicio", "tienda"];
+import { getParsedError, notification } from "~~/utils/scaffold-eth";
 
 const BeneficiosPage: NextPage = () => {
   const { address: connectedAddress, isConnected } = useAccount();
-  const [category, setCategory] = useState<"todos" | OfferCategory>("todos");
 
   const { data: balance } = useScaffoldReadContract({
     contractName: "MichiPoints",
     functionName: "balanceOf",
     args: [connectedAddress],
   });
-  const balanceNumber = balance !== undefined ? Number(formatEther(balance)) : 0;
+  const { data: totalPointsEarned } = useScaffoldReadContract({
+    contractName: "MichiPoints",
+    functionName: "totalPointsEarned",
+    args: [connectedAddress],
+  });
 
-  const { offers, isUnlocked, currentLevel } = useConsumerOffers(balanceNumber, category);
-  const { currentLevel: petLevel } = useConsumerPetLevel(balanceNumber);
-  const aiOffers = offers.filter(o => o.aiPick);
+  const balanceNumber = balance !== undefined ? Number(balance) : 0;
+  const totalPointsEarnedNumber = totalPointsEarned !== undefined ? Number(totalPointsEarned) : 0;
+
+  const { offers, isUnlocked, currentLevel, isLoading } = useConsumerOffers(totalPointsEarnedNumber);
+  const { byId } = useAllRewards();
+  const { currentLevel: petLevel } = useConsumerPetLevel(totalPointsEarnedNumber);
 
   const ticketsHook = useConsumerTickets(connectedAddress);
 
@@ -50,13 +51,24 @@ const BeneficiosPage: NextPage = () => {
 
   const handleConfirm = async () => {
     if (!selectedOffer) return;
+    const reward = byId.get(selectedOffer.id);
+    if (!reward) {
+      notification.error("Este beneficio ya no está disponible.");
+      setSelectedOffer(null);
+      return;
+    }
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 900));
-    const ticket = ticketsHook.createTicket(selectedOffer);
-    setIsSubmitting(false);
-    setSelectedOffer(null);
-    setSuccessTicket(ticket);
-    notification.success("¡Canje exitoso!");
+    try {
+      const ticket = await ticketsHook.redeem(reward);
+      setSelectedOffer(null);
+      setSuccessTicket(ticket);
+      notification.success("¡Canje exitoso!");
+    } catch (e: any) {
+      console.error("Error al canjear el beneficio:", e);
+      notification.error(getParsedError(e));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const requiredLevelTitle = (levelRequired: number) =>
@@ -64,7 +76,7 @@ const BeneficiosPage: NextPage = () => {
 
   const mpMissing = (levelRequired: number) => {
     const required = MICHI_PET_LEVELS.find(l => l.level === levelRequired)?.mpRequired ?? 0;
-    return Math.max(0, required - balanceNumber);
+    return Math.max(0, required - totalPointsEarnedNumber);
   };
 
   if (!isConnected) {
@@ -95,38 +107,21 @@ const BeneficiosPage: NextPage = () => {
             </p>
           </div>
           <div className="card border border-base-300 bg-base-100 px-4 py-3 text-right shadow-sm">
-            <p className="text-xs text-base-content/60">Poder Adquisitivo</p>
+            <p className="text-xs text-base-content/60">Saldo disponible</p>
             <p className="text-lg font-bold text-primary">{balanceNumber.toLocaleString("es-PE")} MP</p>
-            <p className="text-xs text-base-content/50">≈ S/ {balanceNumber.toLocaleString("es-PE")}</p>
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          {CATEGORIES.map(c => (
-            <button
-              key={c}
-              type="button"
-              className={`btn btn-sm ${category === c ? "btn-neutral" : "btn-ghost bg-base-100"}`}
-              onClick={() => setCategory(c)}
-            >
-              {CATEGORY_LABELS[c]}
-            </button>
-          ))}
-        </div>
-
-        {aiOffers.length > 0 && (
-          <section className="card mt-5 border border-accent/30 bg-accent/5 p-4 sm:p-5">
-            <div className="flex items-center gap-2">
-              <span className="badge badge-accent badge-sm gap-1">
-                <Sparkles className="size-3" aria-hidden="true" /> Selección Michi IA
-              </span>
-            </div>
-            <h2 className="mt-2 text-lg font-bold">Para tu fin de semana</h2>
-            <p className="text-sm text-base-content/60">
-              Basado en tus compras, encontramos estos lugares que te encantarán cerca de ti.
-            </p>
-            <div className="mt-3 grid gap-4 sm:grid-cols-2">
-              {aiOffers.map(offer => (
+        <section className="mt-6">
+          <h2 className="text-sm font-bold">Todos los comercios afiliados</h2>
+          <p className="mt-1 text-xs text-base-content/50">
+            Tu nivel actual: {petLevel.icon} {petLevel.title} (Lv.{currentLevel.level})
+          </p>
+          {isLoading ? (
+            <span className="loading loading-spinner loading-sm mt-4"></span>
+          ) : offers.length > 0 ? (
+            <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {offers.map(offer => (
                 <OfferCard
                   key={offer.id}
                   offer={offer}
@@ -137,26 +132,11 @@ const BeneficiosPage: NextPage = () => {
                 />
               ))}
             </div>
-          </section>
-        )}
-
-        <section className="mt-6">
-          <h2 className="text-sm font-bold">Todos los comercios afiliados</h2>
-          <p className="mt-1 text-xs text-base-content/50">
-            Tu nivel actual: {petLevel.icon} {petLevel.title} (Lv.{currentLevel.level})
-          </p>
-          <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {offers.map(offer => (
-              <OfferCard
-                key={offer.id}
-                offer={offer}
-                unlocked={isUnlocked(offer)}
-                requiredLevelTitle={requiredLevelTitle(offer.levelRequired)}
-                mpMissing={mpMissing(offer.levelRequired)}
-                onRedeem={handleRedeem}
-              />
-            ))}
-          </div>
+          ) : (
+            <p className="mt-3 rounded-xl border border-dashed border-base-300 bg-base-100 p-6 text-center text-xs text-base-content/50">
+              Todavía no hay beneficios publicados por los comercios afiliados.
+            </p>
+          )}
         </section>
       </main>
 

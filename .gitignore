@@ -21,3 +21,9 @@ node_modules
 
 # cli
 dist
+
+# subgraph
+packages/subgraph/graph-node/data/
+packages/subgraph/generated/
+packages/subgraph/build/
+packages/nextjs/.graphclient/

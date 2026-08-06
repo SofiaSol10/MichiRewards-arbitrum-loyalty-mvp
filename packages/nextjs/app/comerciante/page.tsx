@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Address, AddressInput } from "@scaffold-ui/components";
 import { Cat } from "lucide-react";
 import type { NextPage } from "next";
@@ -9,7 +9,6 @@ import { useAccount } from "wagmi";
 import {
   BuildingStorefrontIcon,
   CheckBadgeIcon,
-  CurrencyDollarIcon,
   InformationCircleIcon,
   PencilSquareIcon,
   PlusCircleIcon,
@@ -27,12 +26,7 @@ import {
   useClientDirectory,
   useMerchantBenefits,
 } from "~~/hooks/michi";
-import {
-  useScaffoldEventHistory,
-  useScaffoldReadContract,
-  useScaffoldWriteContract,
-  useTargetNetwork,
-} from "~~/hooks/scaffold-eth";
+import { useScaffoldReadContract, useScaffoldWriteContract, useTargetNetwork } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
 type Tab = "michipoints" | "beneficios";
@@ -114,8 +108,7 @@ const MerchantDashboard: NextPage = () => {
 
   const [saleIdentifier, setSaleIdentifier] = useState("");
   const [saleAmount, setSaleAmount] = useState("");
-  const [chargeIdentifier, setChargeIdentifier] = useState("");
-  const [chargeAmount, setChargeAmount] = useState("");
+  const [ticketCode, setTicketCode] = useState("");
 
   const { data: isMerchant } = useScaffoldReadContract({
     contractName: "MichiPoints",
@@ -128,87 +121,82 @@ const MerchantDashboard: NextPage = () => {
     functionName: "rewardRate",
   });
 
+  const { data: totalPointsIssued, refetch: refetchIssued } = useScaffoldReadContract({
+    contractName: "MichiPoints",
+    functionName: "merchantPointsIssued",
+    args: [connectedAddress],
+  });
+
+  const { data: totalPointsRedeemed, refetch: refetchRedeemed } = useScaffoldReadContract({
+    contractName: "MichiPoints",
+    functionName: "merchantPointsRedeemed",
+    args: [connectedAddress],
+  });
+
   const { writeContractAsync: writeMichiPoints, isPending } = useScaffoldWriteContract({
     contractName: "MichiPoints",
   });
 
-  const { data: mintedEvents } = useScaffoldEventHistory({
-    contractName: "MichiPoints",
-    eventName: "RewardMinted",
-    watch: true,
-    fromBlock: 0n,
-  });
-
-  const { data: redeemedEvents } = useScaffoldEventHistory({
-    contractName: "MichiPoints",
-    eventName: "RewardRedeemed",
-    watch: true,
-    fromBlock: 0n,
-  });
-
-  const { totalGranted, totalSalesAmount } = useMemo(() => {
-    let granted = 0n;
-    let sales = 0n;
-    mintedEvents?.forEach(evt => {
-      if (evt.args.merchant?.toLowerCase() === connectedAddress?.toLowerCase()) {
-        granted += evt.args.reward ?? 0n;
-        sales += evt.args.purchaseAmount ?? 0n;
-      }
-    });
-    return { totalGranted: granted, totalSalesAmount: sales };
-  }, [mintedEvents, connectedAddress]);
-
-  const totalRedeemed = useMemo(() => {
-    let redeemed = 0n;
-    redeemedEvents?.forEach(evt => {
-      if (evt.args.merchant?.toLowerCase() === connectedAddress?.toLowerCase()) {
-        redeemed += evt.args.amount ?? 0n;
-      }
-    });
-    return redeemed;
-  }, [redeemedEvents, connectedAddress]);
+  const totalGranted = totalPointsIssued ?? 0n;
+  const totalRedeemed = totalPointsRedeemed ?? 0n;
 
   const directory = useClientDirectory(connectedAddress);
   const resolvedSaleAddress = directory.resolve(saleIdentifier);
-  const resolvedChargeAddress = directory.resolve(chargeIdentifier);
 
   const rate = rewardRate ?? 1n;
   const saleReward = saleAmount ? BigInt(Math.max(0, Math.floor(Number(saleAmount)))) * rate : 0n;
-  const chargeTotal = chargeAmount ? BigInt(Math.max(0, Math.floor(Number(chargeAmount)))) : 0n;
 
   const benefitsHook = useMerchantBenefits(connectedAddress);
   const [benefitForm, setBenefitForm] = useState<{ level: BenefitLevel; editingId?: string } | null>(null);
   const [benefitName, setBenefitName] = useState("");
   const [benefitCost, setBenefitCost] = useState("");
-  const [benefitStockMax, setBenefitStockMax] = useState("");
+  const [benefitStock, setBenefitStock] = useState("");
+  const [restockAmount, setRestockAmount] = useState("");
 
   const openBenefitForm = (level: BenefitLevel, existing?: Benefit) => {
     setBenefitForm({ level, editingId: existing?.id });
     setBenefitName(existing?.name ?? "");
     setBenefitCost(existing ? String(existing.cost) : "");
-    setBenefitStockMax(existing ? String(existing.stockMax) : "");
+    setBenefitStock(existing ? String(existing.stock) : "");
+    setRestockAmount("");
   };
 
   const closeBenefitForm = () => setBenefitForm(null);
 
-  const handleSaveBenefit = () => {
+  const editingBenefit = benefitForm?.editingId
+    ? benefitsHook.benefits.find(b => b.id === benefitForm.editingId)
+    : undefined;
+
+  const handleSaveBenefit = async () => {
     if (!benefitForm) return;
+    if (editingBenefit) {
+      const amount = Number(restockAmount);
+      if (amount > 0) await benefitsHook.restockBenefit(editingBenefit.id, amount);
+      closeBenefitForm();
+      return;
+    }
     const cost = Number(benefitCost);
-    const stockMax = Number(benefitStockMax);
-    if (!benefitName.trim() || !cost || !stockMax) {
+    const stock = Number(benefitStock);
+    if (!benefitName.trim() || !cost || !stock) {
       notification.error("Completa el nombre, el costo en puntos y el stock del beneficio.");
       return;
     }
-    if (benefitForm.editingId) {
-      benefitsHook.updateBenefit(benefitForm.editingId, { name: benefitName.trim(), cost, stockMax });
-    } else {
-      benefitsHook.addBenefit(benefitForm.level, { name: benefitName.trim(), cost, stockMax });
+    try {
+      await benefitsHook.addBenefit(benefitForm.level, { name: benefitName.trim(), cost, stock });
+      notification.success("Beneficio publicado on-chain");
+      closeBenefitForm();
+    } catch (e: any) {
+      console.error("Error al crear el beneficio:", e);
     }
-    closeBenefitForm();
   };
 
-  const handleRemoveBenefit = (id: string) => {
-    if (window.confirm("¿Eliminar este beneficio?")) benefitsHook.removeBenefit(id);
+  const handleToggleActive = async (benefit: Benefit) => {
+    try {
+      await benefitsHook.toggleBenefitActive(benefit.id, !benefit.active);
+      notification.success(benefit.active ? "Beneficio desactivado" : "Beneficio reactivado");
+    } catch (e: any) {
+      console.error("Error al actualizar el beneficio:", e);
+    }
   };
 
   const handleRegisterSale = async () => {
@@ -222,37 +210,34 @@ const MerchantDashboard: NextPage = () => {
     }
     try {
       await writeMichiPoints({
-        functionName: "mintRewardToken",
+        functionName: "registerPurchase",
         args: [resolvedSaleAddress, BigInt(saleAmount)],
       });
       notification.success("MichiPoints otorgados al cliente");
       setSaleAmount("");
+      refetchIssued();
     } catch (e: any) {
       console.error("Error al registrar la venta:", e);
     }
   };
 
-  const handleChargeCoins = async () => {
-    if (!chargeIdentifier || !chargeAmount) {
-      notification.error("Completa el cliente y los MichiPoints a cobrar.");
-      return;
-    }
-    if (!resolvedChargeAddress) {
-      notification.error("Ingresá una wallet válida o asociá el correo a una wallet primero.");
+  const handleValidateTicket = async () => {
+    if (!ticketCode.trim()) {
+      notification.error("Ingresá el código de ticket que te muestra el cliente.");
       return;
     }
     try {
       await writeMichiPoints({
-        functionName: "burnRewardToken",
-        args: [resolvedChargeAddress, chargeTotal],
+        functionName: "validateTicket",
+        args: [ticketCode.trim()],
       });
-      notification.success("MichiPoints recibidos como pago");
-      setChargeAmount("");
+      notification.success("Ticket validado — canje procesado");
+      setTicketCode("");
+      refetchRedeemed();
     } catch (e: any) {
-      console.error("Error al cobrar con MichiPoints:", e);
+      console.error("Error al validar el ticket:", e);
     }
   };
-
 
   if (!isConnected) {
     return (
@@ -351,16 +336,13 @@ const MerchantDashboard: NextPage = () => {
 
               <section className="rounded-2xl bg-gradient-to-br from-primary to-accent px-6 py-6 text-primary-content shadow-lg sm:py-7">
                 <h2 className="text-sm font-semibold uppercase tracking-wide">MichiPoints Otorgados</h2>
-                <p className="mt-1 text-4xl font-bold tabular-nums sm:text-5xl">{totalGranted.toLocaleString()}</p>
-                <p className="mt-1 text-sm opacity-90">Equivale a S/ {totalSalesAmount.toLocaleString()} en ventas</p>
+                <p className="mt-1 text-4xl font-bold tabular-nums sm:text-5xl">{totalGranted.toString()}</p>
               </section>
 
               <section className="card border-2 border-info bg-base-100 p-4 text-sm shadow-sm">
                 <h2 className="font-semibold">Puntos Recibidos (Canjes)</h2>
-                <p className="mt-1 text-3xl font-bold text-info">{totalRedeemed.toLocaleString()} pts</p>
+                <p className="mt-1 text-3xl font-bold text-info">{totalRedeemed.toString()} pts</p>
               </section>
-
-        
             </div>
 
             <div className="space-y-5 sm:space-y-6">
@@ -440,47 +422,32 @@ const MerchantDashboard: NextPage = () => {
                   <div className="flex items-center gap-2 text-secondary">
                     <QrCodeIcon className="size-5 shrink-0" aria-hidden="true" />
                     <h2 id="cobro-title" className="text-lg font-bold">
-                      Cobrar / Validar Canje
+                      Validar Ticket de Canje
                     </h2>
                   </div>
-                  <p className="text-sm text-base-content/70">Recibe MichiPoints como pago de un producto.</p>
-
-                  <ClientIdentifierField
-                    label="Cliente (correo/wallet)"
-                    placeholder="cliente@correo.com o 0x..."
-                    value={chargeIdentifier}
-                    onChange={setChargeIdentifier}
-                    directory={directory}
-                  />
-                  <p className="text-xs text-base-content/50">
-                    Los códigos de cupón de la pestaña Beneficios todavía no están conectados a esta acción.
+                  <p className="text-sm text-base-content/70">
+                    Ingresá el código que te muestra el cliente en caja (ej. MCH-74LD-5) para validar su canje.
                   </p>
 
                   <div className="space-y-1">
-                    <label className="label text-xs font-semibold">MichiPoints a cobrar</label>
+                    <label className="label text-xs font-semibold">Código del ticket</label>
                     <input
-                      type="number"
-                      min="0"
-                      className="input input-bordered w-full"
-                      placeholder="ej. 50"
-                      value={chargeAmount}
-                      onChange={e => setChargeAmount(e.target.value)}
+                      type="text"
+                      className="input input-bordered w-full uppercase"
+                      placeholder="MCH-XXXX-X"
+                      value={ticketCode}
+                      onChange={e => setTicketCode(e.target.value)}
                     />
                   </div>
-
-                  <p className="flex items-center justify-between gap-3 rounded-lg bg-base-200 px-4 py-3 text-sm">
-                    <span className="text-base-content/70">Total a cobrar en puntos:</span>
-                    <span className="font-bold text-secondary">-{chargeTotal.toString()} pts</span>
-                  </p>
 
                   <button
                     type="submit"
                     className="btn btn-secondary w-full gap-2"
-                    onClick={handleChargeCoins}
-                    disabled={isPending || !resolvedChargeAddress || !chargeAmount}
+                    onClick={handleValidateTicket}
+                    disabled={isPending || !ticketCode.trim()}
                   >
-                    <CurrencyDollarIcon className="size-4" aria-hidden="true" />
-                    Procesar Cobro / Canje
+                    <CheckBadgeIcon className="size-4" aria-hidden="true" />
+                    Validar Ticket
                   </button>
                 </form>
               </div>
@@ -519,26 +486,30 @@ const MerchantDashboard: NextPage = () => {
                   <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
                     {slots.map((benefit, idx) =>
                       benefit ? (
-                        <div key={benefit.id} className="card border border-base-300 bg-base-100 p-3 text-xs shadow-sm">
+                        <div
+                          key={benefit.id}
+                          className={`card border border-base-300 bg-base-100 p-3 text-xs shadow-sm ${
+                            benefit.active ? "" : "opacity-50"
+                          }`}
+                        >
                           <p className="font-semibold">{benefit.name}</p>
-                          <p className="mt-1 text-base-content/60">
-                            Stock: {benefit.stockCurrent}/{benefit.stockMax}
-                          </p>
+                          <p className="mt-1 text-base-content/60">Stock: {benefit.stock}</p>
                           <p className="text-base-content/60">Costo: {benefit.cost} pts</p>
+                          {!benefit.active && <p className="mt-1 font-semibold text-warning">Inactivo</p>}
                           <div className="mt-2 flex gap-3">
                             <button
                               type="button"
                               className="link text-info"
                               onClick={() => openBenefitForm(level, benefit)}
                             >
-                              Editar
+                              Reponer stock
                             </button>
                             <button
                               type="button"
                               className="link flex items-center gap-1 text-error"
-                              onClick={() => handleRemoveBenefit(benefit.id)}
+                              onClick={() => handleToggleActive(benefit)}
                             >
-                              <TrashIcon className="size-3" /> Eliminar
+                              <TrashIcon className="size-3" /> {benefit.active ? "Desactivar" : "Reactivar"}
                             </button>
                           </div>
                         </div>
@@ -564,48 +535,80 @@ const MerchantDashboard: NextPage = () => {
       {benefitForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={closeBenefitForm}>
           <div className="card w-full max-w-sm bg-base-100 p-5 shadow-2xl" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-bold">{benefitForm.editingId ? "Editar beneficio" : "Nuevo beneficio"}</h3>
+            <h3 className="text-lg font-bold">{editingBenefit ? "Reponer stock" : "Nuevo beneficio"}</h3>
             <p className="text-xs text-base-content/60">
               {BENEFIT_LEVELS.find(l => l.level === benefitForm.level)?.title}
             </p>
-            <div className="mt-3 space-y-3">
-              <div>
-                <label className="label text-xs font-semibold">Nombre</label>
-                <input
-                  className="input input-bordered w-full"
-                  value={benefitName}
-                  onChange={e => setBenefitName(e.target.value)}
-                  placeholder="ej. Descuento 10% Café"
-                />
+
+            {editingBenefit ? (
+              <div className="mt-3 space-y-3">
+                <div className="rounded-lg bg-base-200 p-3 text-xs">
+                  <p className="font-semibold">{editingBenefit.name}</p>
+                  <p className="mt-1 text-base-content/60">Costo: {editingBenefit.cost} pts</p>
+                  <p className="text-base-content/60">Stock actual: {editingBenefit.stock}</p>
+                </div>
+                <p className="text-xs text-base-content/50">
+                  El nombre, nivel y costo de un beneficio ya publicado no se pueden editar on-chain — solo podés
+                  agregar stock o desactivarlo/reactivarlo desde la tarjeta.
+                </p>
+                <div>
+                  <label className="label text-xs font-semibold">Agregar stock</label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="input input-bordered w-full"
+                    value={restockAmount}
+                    onChange={e => setRestockAmount(e.target.value)}
+                    placeholder="ej. 10"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="label text-xs font-semibold">Costo (pts)</label>
-                <input
-                  type="number"
-                  min="0"
-                  className="input input-bordered w-full"
-                  value={benefitCost}
-                  onChange={e => setBenefitCost(e.target.value)}
-                  placeholder="ej. 50"
-                />
+            ) : (
+              <div className="mt-3 space-y-3">
+                <div>
+                  <label className="label text-xs font-semibold">Nombre</label>
+                  <input
+                    className="input input-bordered w-full"
+                    value={benefitName}
+                    onChange={e => setBenefitName(e.target.value)}
+                    placeholder="ej. Descuento 10% Café"
+                  />
+                </div>
+                <div>
+                  <label className="label text-xs font-semibold">Costo (pts)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="input input-bordered w-full"
+                    value={benefitCost}
+                    onChange={e => setBenefitCost(e.target.value)}
+                    placeholder="ej. 50"
+                  />
+                </div>
+                <div>
+                  <label className="label text-xs font-semibold">Stock inicial</label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="input input-bordered w-full"
+                    value={benefitStock}
+                    onChange={e => setBenefitStock(e.target.value)}
+                    placeholder="ej. 20"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="label text-xs font-semibold">Stock máximo</label>
-                <input
-                  type="number"
-                  min="0"
-                  className="input input-bordered w-full"
-                  value={benefitStockMax}
-                  onChange={e => setBenefitStockMax(e.target.value)}
-                  placeholder="ej. 20"
-                />
-              </div>
-            </div>
+            )}
+
             <div className="mt-4 flex gap-2">
               <button type="button" className="btn btn-ghost flex-1" onClick={closeBenefitForm}>
                 Cancelar
               </button>
-              <button type="button" className="btn btn-primary flex-1" onClick={handleSaveBenefit}>
+              <button
+                type="button"
+                className="btn btn-primary flex-1"
+                onClick={handleSaveBenefit}
+                disabled={benefitsHook.isPending}
+              >
                 Guardar
               </button>
             </div>

@@ -1,0 +1,30 @@
+type Merchant @entity(immutable: false) {
+  id: ID! # merchant address (lowercase hex)
+  address: Bytes!
+  isActive: Boolean!
+  totalMinted: BigInt!
+  registeredAt: BigInt!
+  rewards: [RewardEvent!]! @derivedFrom(field: "merchant")
+}
+
+type Customer @entity(immutable: false) {
+  id: ID! # customer address (lowercase hex)
+  address: Bytes!
+  balance: BigInt!
+  totalEarned: BigInt!
+  totalRedeemed: BigInt!
+  rewards: [RewardEvent!]! @derivedFrom(field: "customer")
+}
+
+type RewardEvent @entity(immutable: true) {
+  id: ID! # tx hash - log index
+  type: String! # "MINT" | "REDEEM" | "TRANSFER"
+  merchant: Merchant
+  customer: Customer
+  from: Bytes
+  to: Bytes
+  purchaseAmount: BigInt
+  amount: BigInt!
+  timestamp: BigInt!
+  transactionHash: String!
+}

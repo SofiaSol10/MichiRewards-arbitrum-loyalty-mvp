@@ -2,21 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Coffee, Plus, Sparkles, Store, Ticket as TicketIcon, Utensils } from "lucide-react";
+import { Plus, Ticket as TicketIcon } from "lucide-react";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
 import { ConsumerHeader } from "~~/components/michi/ConsumerHeader";
 import { TicketCodeModal } from "~~/components/michi/TicketCodeModal";
 import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
-import { MOCK_OFFERS, type Ticket, type TicketStatus, getTicketStatus, useConsumerTickets } from "~~/hooks/michi";
+import { type Ticket, type TicketStatus, getTicketStatus, useConsumerTickets } from "~~/hooks/michi";
 
 const TABS: { status: TicketStatus; label: string }[] = [
   { status: "active", label: "Activos / Por Usar" },
   { status: "redeemed", label: "Canjeados" },
   { status: "expired", label: "Expirados" },
 ];
-
-const CATEGORY_ICONS = { coffee: Coffee, utensils: Utensils, sparkles: Sparkles, store: Store } as const;
 
 function formatRelative(timestampMs: number) {
   const diffMs = Date.now() - timestampMs;
@@ -32,13 +30,11 @@ function formatRelative(timestampMs: number) {
 
 function TicketRow({ ticket, onShowCode }: { ticket: Ticket; onShowCode: (ticket: Ticket) => void }) {
   const status = getTicketStatus(ticket);
-  const offer = MOCK_OFFERS.find(o => o.id === ticket.offerId);
-  const Icon = offer ? CATEGORY_ICONS[offer.icon] : TicketIcon;
 
   return (
     <div className="card flex-row items-center gap-3 border border-base-300 bg-base-100 p-3 shadow-sm sm:p-4">
       <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary/80 to-accent/80 text-primary-content">
-        <Icon className="size-5" aria-hidden="true" />
+        <TicketIcon className="size-5" aria-hidden="true" />
       </span>
 
       <div className="min-w-0 flex-1">

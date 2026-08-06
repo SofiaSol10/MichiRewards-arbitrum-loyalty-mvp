@@ -1,0 +1,35 @@
+specVersion: 0.0.4
+description: Indexing for the MichiPoints loyalty rewards contract
+schema:
+  file: ./src/schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: MichiPoints
+    network: localhost
+    source:
+      abi: MichiPoints
+      address: "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Merchant
+        - Customer
+        - RewardEvent
+      abis:
+        - name: MichiPoints
+          file: ./abis/localhost_MichiPoints.json
+      eventHandlers:
+        - event: MerchantRegistered(address)
+          handler: handleMerchantRegistered
+        - event: MerchantRemoved(address)
+          handler: handleMerchantRemoved
+        - event: RewardMinted(indexed address,indexed address,uint256,uint256)
+          handler: handleRewardMinted
+        - event: RewardRedeemed(indexed address,indexed address,uint256)
+          handler: handleRewardRedeemed
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: ./src/mapping.ts

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Check, Lock, Sparkles } from "lucide-react";
 import type { NextPage } from "next";
-import { formatEther } from "viem";
 import { useAccount } from "wagmi";
 import { InformationCircleIcon, ShoppingBagIcon, WalletIcon } from "@heroicons/react/24/outline";
 import { ConsumerHeader } from "~~/components/michi/ConsumerHeader";
@@ -13,14 +12,15 @@ import { TicketCodeModal } from "~~/components/michi/TicketCodeModal";
 import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import {
   MICHI_PET_LEVELS,
-  MOCK_OFFERS,
   type Offer,
   type Ticket,
+  useAllRewards,
+  useConsumerOffers,
   useConsumerPetLevel,
   useConsumerTickets,
 } from "~~/hooks/michi";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
-import { notification } from "~~/utils/scaffold-eth";
+import { getParsedError, notification } from "~~/utils/scaffold-eth";
 
 const ConsumerDashboard: NextPage = () => {
   const { address: connectedAddress, isConnected } = useAccount();
@@ -30,12 +30,20 @@ const ConsumerDashboard: NextPage = () => {
     functionName: "balanceOf",
     args: [connectedAddress],
   });
+  const { data: totalPointsEarned } = useScaffoldReadContract({
+    contractName: "MichiPoints",
+    functionName: "totalPointsEarned",
+    args: [connectedAddress],
+  });
 
-  const balanceNumber = balance !== undefined ? Number(formatEther(balance)) : 0;
-  const { currentLevel, nextLevel, progressPct, mpToNext } = useConsumerPetLevel(balanceNumber);
+  const balanceNumber = balance !== undefined ? Number(balance) : 0;
+  const totalPointsEarnedNumber = totalPointsEarned !== undefined ? Number(totalPointsEarned) : 0;
+  const { currentLevel, nextLevel, progressPct, mpToNext } = useConsumerPetLevel(totalPointsEarnedNumber);
 
+  const { offers, isUnlocked } = useConsumerOffers(totalPointsEarnedNumber);
+  const { byId } = useAllRewards();
   const ticketsHook = useConsumerTickets(connectedAddress);
-  const homeOffers = MOCK_OFFERS.filter(o => o.homePick);
+  const homeOffers = offers.filter(isUnlocked).slice(0, 3);
 
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,13 +53,24 @@ const ConsumerDashboard: NextPage = () => {
 
   const handleConfirm = async () => {
     if (!selectedOffer) return;
+    const reward = byId.get(selectedOffer.id);
+    if (!reward) {
+      notification.error("Este beneficio ya no está disponible.");
+      setSelectedOffer(null);
+      return;
+    }
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 900));
-    const ticket = ticketsHook.createTicket(selectedOffer);
-    setIsSubmitting(false);
-    setSelectedOffer(null);
-    setSuccessTicket(ticket);
-    notification.success("¡Canje exitoso!");
+    try {
+      const ticket = await ticketsHook.redeem(reward);
+      setSelectedOffer(null);
+      setSuccessTicket(ticket);
+      notification.success("¡Canje exitoso!");
+    } catch (e: any) {
+      console.error("Error al canjear el beneficio:", e);
+      notification.error(getParsedError(e));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isConnected) {
@@ -147,14 +166,20 @@ const ConsumerDashboard: NextPage = () => {
         <section className="mt-5">
           <div className="flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-sm font-bold">
-              <Sparkles className="size-4 text-accent" aria-hidden="true" /> Michi IA — Ofertas recomendadas para ti
+              <Sparkles className="size-4 text-accent" aria-hidden="true" /> Beneficios disponibles para ti
             </h2>
           </div>
-          <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {homeOffers.map(offer => (
-              <OfferCard key={offer.id} offer={offer} unlocked onRedeem={handleRedeem} />
-            ))}
-          </div>
+          {homeOffers.length > 0 ? (
+            <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {homeOffers.map(offer => (
+                <OfferCard key={offer.id} offer={offer} unlocked onRedeem={handleRedeem} />
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 rounded-xl border border-dashed border-base-300 bg-base-100 p-4 text-center text-xs text-base-content/50">
+              Todavía no hay beneficios publicados por comercios afiliados que puedas canjear con tu nivel actual.
+            </p>
+          )}
         </section>
 
         <section className="mt-6">

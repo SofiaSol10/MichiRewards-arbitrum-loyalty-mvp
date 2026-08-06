@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { RainbowKitProvider, darkTheme, lightTheme } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
@@ -12,7 +13,24 @@ import { Header } from "~~/components/Header";
 import { BlockieAvatar } from "~~/components/scaffold-eth";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 
+// Rutas de onboarding (landing, login, selector de rol, conexión de wallet)
+// que usan su propia tarjeta a pantalla completa (MichiShell) y no esperan
+// el nav/footer por defecto de Scaffold-ETH arriba/abajo.
+const CHROMELESS_ROUTES = ["/", "/login", "/registro", "/conectar", "/aviso"];
+
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
+  const pathname = usePathname();
+  const isChromeless = CHROMELESS_ROUTES.includes(pathname);
+
+  if (isChromeless) {
+    return (
+      <>
+        {children}
+        <Toaster />
+      </>
+    );
+  }
+
   return (
     <>
       <div className={`flex flex-col min-h-screen `}>

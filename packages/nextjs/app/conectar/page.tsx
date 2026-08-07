@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
-import { DevicePhoneMobileIcon } from "@heroicons/react/24/outline";
+import { EnvelopeIcon } from "@heroicons/react/24/outline";
 import { MichiBrand, MichiShell } from "~~/components/MichiBrand";
 import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
@@ -52,7 +52,7 @@ const ConnectWallet: NextPage = () => {
 
       <section aria-labelledby="wallet-title" className="mt-6 rounded-xl bg-base-200 p-4 sm:p-5">
         <h2 id="wallet-title" className="text-sm font-semibold">
-          {rol ? `Conecta tu wallet como ${rol}` : "Conecta tu wallet para continuar"}
+          {rol ? `Inicia sesión como ${rol}` : "Inicia sesión para continuar"}
         </h2>
 
         <div className="mt-3 flex justify-center">
@@ -64,11 +64,8 @@ const ConnectWallet: NextPage = () => {
         </div>
 
         <p className="mt-3 flex items-start gap-2 text-xs text-base-content/60">
-          <DevicePhoneMobileIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          <span>
-            No detectamos una wallet. Abre esta página desde el navegador interno de MetaMask en tu celular para
-            continuar.
-          </span>
+          <EnvelopeIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <span>Ingresa con tu correo — te enviamos un código de verificación, sin contraseñas.</span>
         </p>
       </section>
     </MichiShell>

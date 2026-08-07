@@ -5320,11 +5320,14 @@ __metadata:
   resolution: "@se-2/nextjs@workspace:packages/nextjs"
   dependencies:
     "@heroicons/react": "npm:~2.2.0"
+    "@privy-io/react-auth": "npm:^3.36.0"
+    "@privy-io/wagmi": "npm:^4.0.15"
     "@rainbow-me/rainbowkit": "npm:2.2.11"
     "@react-native-async-storage/async-storage": "npm:~2.2.0"
     "@scaffold-ui/components": "npm:^0.1.12"
     "@scaffold-ui/debug-contracts": "npm:^0.1.11"
     "@scaffold-ui/hooks": "npm:^0.1.8"
+    "@stripe/stripe-js": "npm:^9.12.1"
     "@tailwindcss/postcss": "npm:4.2.4"
     "@tanstack/react-query": "npm:~5.100.5"
     "@trivago/prettier-plugin-sort-imports": "npm:~6.0.2"
@@ -5355,7 +5358,7 @@ __metadata:
     typescript: "npm:~5.8.2"
     usehooks-ts: "npm:~3.1.1"
     vercel: "npm:~52.0.0"
-    viem: "npm:2.53.1"
+    viem: "npm:2.55.5"
     wagmi: "npm:2.19.5"
     zustand: "npm:~5.0.12"
   languageName: unknown
@@ -6263,6 +6266,13 @@ __metadata:
   peerDependencies:
     "@stripe/stripe-js": ^1.46.0
   checksum: 10/2b39299d715c16f4532c24f5283ed7b4a8a5d06ffd8ad7c241c0c1d62d9815b5571b52105397395f2e910b88e639ba24fe706f21e595cd796b2d6ff5aa33b20e
+  languageName: node
+  linkType: hard
+
+"@stripe/stripe-js@npm:^9.12.1":
+  version: 9.12.1
+  resolution: "@stripe/stripe-js@npm:9.12.1"
+  checksum: 10/beec1f2bfd5b0f235eda9d52a7cf0650ba23c98fdf2bea797acf967e8336faf8ea156d7fca376e51e132bb012bc1c43f3adbb6fed91fbb50918f2c147ceaf80b
   languageName: node
   linkType: hard
 

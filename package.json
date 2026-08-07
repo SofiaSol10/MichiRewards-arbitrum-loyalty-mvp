@@ -72,6 +72,8 @@
     "node": ">=22.10.0"
   },
   "dependencies": {
+    "@privy-io/react-auth": "^3.36.0",
+    "@privy-io/wagmi": "^4.0.15",
     "lucide-react": "^1.27.0"
   }
 }

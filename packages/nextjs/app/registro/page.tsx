@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { NextPage } from "next";
-import { BuildingStorefrontIcon, UserIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, BuildingStorefrontIcon, UserIcon } from "@heroicons/react/24/outline";
 import { MichiBrand, MichiShell } from "~~/components/MichiBrand";
 import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 
@@ -12,6 +12,14 @@ export const metadata = getMetadata({
 const Registro: NextPage = () => {
   return (
     <MichiShell>
+      <Link
+        href="/login"
+        className="mb-2 inline-flex items-center gap-1.5 text-sm font-medium text-base-content/60 hover:text-base-content"
+      >
+        <ArrowLeftIcon className="size-4" aria-hidden="true" />
+        Volver
+      </Link>
+
       <MichiBrand />
 
       <section aria-labelledby="rol-title" className="mt-6 rounded-xl bg-base-200 p-4 sm:p-5">

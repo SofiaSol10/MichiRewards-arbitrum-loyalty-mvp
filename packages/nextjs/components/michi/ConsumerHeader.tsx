@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Address } from "@scaffold-ui/components";
 import { Cat, Ticket } from "lucide-react";
-import { useAccount } from "wagmi";
-import { useTargetNetwork } from "~~/hooks/scaffold-eth";
+import { Cog6ToothIcon } from "@heroicons/react/24/outline";
+import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 
 const NAV_LINKS = [
   { href: "/consumidor", label: "Michi Home" },
@@ -14,13 +13,11 @@ const NAV_LINKS = [
 
 export function ConsumerHeader() {
   const pathname = usePathname();
-  const { address } = useAccount();
-  const { targetNetwork } = useTargetNetwork();
 
   return (
     <header className="border-b border-base-300 bg-base-100">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5">
-        <Link href="/consumidor" className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3">
           <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-accent text-primary-content">
             <Cat className="size-5" />
           </span>
@@ -43,7 +40,6 @@ export function ConsumerHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          {/*<span className="badge badge-outline badge-sm hidden sm:inline-flex">{targetNetwork.name}</span>*/}
           <Link
             href="/consumidor/tickets"
             aria-label="Mis Tickets y Canjes"
@@ -51,10 +47,15 @@ export function ConsumerHeader() {
           >
             <Ticket className="size-4" />
           </Link>
-          <div className="flex items-center gap-2 rounded-xl border border-base-300 bg-base-200 px-3 py-1.5">
-            <span className="text-xs font-semibold text-base-content/70">Consumidor</span>
-            {address && <Address address={address} chain={targetNetwork} disableAddressLink size="sm" />}
-          </div>
+          <Link
+            href="/admin"
+            aria-label="Admin"
+            className={`btn btn-sm btn-square ${pathname === "/admin" ? "btn-neutral" : "btn-ghost"}`}
+          >
+            <Cog6ToothIcon className="size-4" />
+          </Link>
+          <span className="badge badge-outline badge-sm hidden sm:inline-flex">Consumidor</span>
+          <RainbowKitCustomConnectButton />
         </div>
       </div>
     </header>

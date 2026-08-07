@@ -7,6 +7,7 @@ import { useAccount } from "wagmi";
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
 import { MichiBrand, MichiShell } from "~~/components/MichiBrand";
 import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
+import { useWalletStatus } from "~~/hooks/michi";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
 type Rol = "comerciante" | "consumidor";
@@ -19,7 +20,13 @@ const ConnectWallet: NextPage = () => {
   const rol: Rol | undefined =
     rolParam === "consumidor" ? "consumidor" : rolParam === "comerciante" ? "comerciante" : undefined;
   const router = useRouter();
-  const { address: connectedAddress, isConnected } = useAccount();
+  // Misma condición que `useRequireWallet` usa para las páginas protegidas
+  // (Privy autenticado + wagmi sincronizado). Si acá se navegara solo con el
+  // `isConnected` de wagmi, esta página podía redirigir "hacia adelante" un
+  // instante antes de que la página de destino estuviera de acuerdo, y esa
+  // rebotaba de vuelta — un loop de redirecciones entre las dos rutas.
+  const walletStatus = useWalletStatus();
+  const { address: connectedAddress } = useAccount();
 
   const { data: isMerchant, isFetched: isMerchantFetched } = useScaffoldReadContract({
     contractName: "MichiPoints",
@@ -28,7 +35,7 @@ const ConnectWallet: NextPage = () => {
   });
 
   useEffect(() => {
-    if (!isConnected || !connectedAddress) return;
+    if (walletStatus !== "ready" || !connectedAddress) return;
 
     if (rol === "consumidor") {
       router.push("/consumidor");
@@ -44,7 +51,7 @@ const ConnectWallet: NextPage = () => {
     if (isMerchantFetched) {
       router.push(isMerchant ? "/comerciante" : "/consumidor");
     }
-  }, [isConnected, connectedAddress, rol, isMerchant, isMerchantFetched, router]);
+  }, [walletStatus, connectedAddress, rol, isMerchant, isMerchantFetched, router]);
 
   return (
     <MichiShell>
@@ -56,7 +63,7 @@ const ConnectWallet: NextPage = () => {
         </h2>
 
         <div className="mt-3 flex justify-center">
-          {isConnected ? (
+          {walletStatus !== "unauthenticated" ? (
             <p className="text-sm text-base-content/70">Verificando tu cuenta…</p>
           ) : (
             <RainbowKitCustomConnectButton />

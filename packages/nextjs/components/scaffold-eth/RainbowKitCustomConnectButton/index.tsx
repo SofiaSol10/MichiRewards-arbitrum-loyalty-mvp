@@ -22,10 +22,31 @@ export const RainbowKitCustomConnectButton = () => {
   const { ready, authenticated, login } = usePrivy();
   const { address, chain, isConnected } = useAccount();
 
-  if (!ready || !authenticated || !isConnected || !address) {
+  if (!ready) {
     return (
-      <button className="btn btn-primary btn-sm" onClick={login} type="button" disabled={!ready}>
+      <button className="btn btn-primary btn-sm" type="button" disabled>
+        Conectando…
+      </button>
+    );
+  }
+
+  if (!authenticated) {
+    return (
+      <button className="btn btn-primary btn-sm" onClick={login} type="button">
         Conectar
+      </button>
+    );
+  }
+
+  // `authenticated` (sesión de Privy) puede quedar en `true` antes de que
+  // wagmi termine de sincronizar la wallet (`isConnected`/`address`) — sobre
+  // todo al recargar con una sesión ya iniciada. Llamar a `login()` en ese
+  // estado intermedio falla ("user is already logged in"), así que se
+  // muestra un estado de carga en vez de reofrecer el botón de login.
+  if (!isConnected || !address) {
+    return (
+      <button className="btn btn-primary btn-sm" type="button" disabled>
+        Conectando…
       </button>
     );
   }

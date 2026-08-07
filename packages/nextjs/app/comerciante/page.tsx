@@ -17,7 +17,7 @@ import {
   SparklesIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
+import { MichiBrand, MichiShell } from "~~/components/MichiBrand";
 import {
   BENEFIT_LEVELS,
   type Benefit,
@@ -25,6 +25,7 @@ import {
   MAX_SLOTS_PER_LEVEL,
   useClientDirectory,
   useMerchantBenefits,
+  useRequireWallet,
 } from "~~/hooks/michi";
 import { useScaffoldReadContract, useScaffoldWriteContract, useTargetNetwork } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
@@ -88,7 +89,8 @@ const ClientIdentifierField = ({
 };
 
 const MerchantDashboard: NextPage = () => {
-  const { address: connectedAddress, isConnected } = useAccount();
+  const authStatus = useRequireWallet();
+  const { address: connectedAddress } = useAccount();
   const { targetNetwork } = useTargetNetwork();
   const [activeTab, setActiveTab] = useState<Tab>("michipoints");
 
@@ -239,16 +241,11 @@ const MerchantDashboard: NextPage = () => {
     }
   };
 
-  if (!isConnected) {
+  if (authStatus !== "ready") {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-base-200 px-4">
-        <div className="card max-w-sm bg-base-100 p-6 text-center shadow-xl">
-          <p className="mb-4 text-sm text-base-content/70">Conecta tu wallet para ver el panel del comerciante.</p>
-          <div className="flex justify-center">
-            <RainbowKitCustomConnectButton />
-          </div>
-        </div>
-      </div>
+      <MichiShell>
+        <MichiBrand subtitle="Cargando tu panel…" />
+      </MichiShell>
     );
   }
 

@@ -3,11 +3,11 @@
 import { useState } from "react";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
+import { MichiBrand, MichiShell } from "~~/components/MichiBrand";
 import { ConsumerHeader } from "~~/components/michi/ConsumerHeader";
 import { OfferCard } from "~~/components/michi/OfferCard";
 import { RedeemConfirmModal } from "~~/components/michi/RedeemConfirmModal";
 import { TicketCodeModal } from "~~/components/michi/TicketCodeModal";
-import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import {
   MICHI_PET_LEVELS,
   type Offer,
@@ -16,12 +16,14 @@ import {
   useConsumerOffers,
   useConsumerPetLevel,
   useConsumerTickets,
+  useRequireWallet,
 } from "~~/hooks/michi";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 import { getParsedError, notification } from "~~/utils/scaffold-eth";
 
 const BeneficiosPage: NextPage = () => {
-  const { address: connectedAddress, isConnected } = useAccount();
+  const authStatus = useRequireWallet();
+  const { address: connectedAddress } = useAccount();
 
   const { data: balance } = useScaffoldReadContract({
     contractName: "MichiPoints",
@@ -79,16 +81,11 @@ const BeneficiosPage: NextPage = () => {
     return Math.max(0, required - totalPointsEarnedNumber);
   };
 
-  if (!isConnected) {
+  if (authStatus !== "ready") {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-base-200 px-4">
-        <div className="card max-w-sm bg-base-100 p-6 text-center shadow-xl">
-          <p className="mb-4 text-sm text-base-content/70">Conecta tu wallet para ver los beneficios disponibles.</p>
-          <div className="flex justify-center">
-            <RainbowKitCustomConnectButton />
-          </div>
-        </div>
-      </div>
+      <MichiShell>
+        <MichiBrand subtitle="Cargando tus beneficios…" />
+      </MichiShell>
     );
   }
 

@@ -1,8 +1,8 @@
 import { useRef, useState } from "react";
 import { NetworkOptions } from "./NetworkOptions";
+import { usePrivy } from "@privy-io/react-auth";
 import { getAddress } from "viem";
 import { Address } from "viem";
-import { useDisconnect } from "wagmi";
 import {
   ArrowLeftEndOnRectangleIcon,
   ArrowTopRightOnSquareIcon,
@@ -32,7 +32,10 @@ export const AddressInfoDropdown = ({
   displayName,
   blockExplorerAddressLink,
 }: AddressInfoDropdownProps) => {
-  const { disconnect } = useDisconnect();
+  // Privy no soporta desconectar wallets vía `useDisconnect` de wagmi — hay
+  // que cerrar la sesión con `logout()` de Privy (ver docs.privy.io/wallets/
+  // connectors/ethereum/integrations/wagmi → "Using wagmi hooks").
+  const { logout } = usePrivy();
   const checkSumAddress = getAddress(address);
 
   const { copyToClipboard: copyAddressToClipboard, isCopiedToClipboard: isAddressCopiedToClipboard } =
@@ -113,7 +116,7 @@ export const AddressInfoDropdown = ({
             <button
               className="menu-item text-error h-8 btn-sm flex gap-3 py-3"
               type="button"
-              onClick={() => disconnect()}
+              onClick={() => logout()}
             >
               <ArrowLeftEndOnRectangleIcon className="h-6 w-4 ml-2 sm:ml-0" /> <span>Disconnect</span>
             </button>

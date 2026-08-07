@@ -5,3 +5,5 @@ export * from "./useMerchantBenefits";
 export * from "./useConsumerPetLevel";
 export * from "./useConsumerOffers";
 export * from "./useConsumerTickets";
+export * from "./useRequireWallet";
+export * from "./useWalletStatus";

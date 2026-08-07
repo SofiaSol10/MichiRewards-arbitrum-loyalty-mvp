@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" --max-time 5 http://127.0.0.1:3000/conectar)",
+      "Bash('/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe' --headless=new --disable-gpu --no-sandbox --remote-debugging-port=9222 --user-data-dir=/c/Users/vicen/AppData/Local/Temp/claude/c--hackathon-Michi-Rewards/d2d0e1e8-6e75-4bc0-aef2-269ef1c01019/scratchpad/edge-profile4 about:blank)",
+      "Bash(node cdp-driver.mjs run '[ *)",
+      "PowerShell(Get-CimInstance Win32_Process -Filter \"Name = 'msedge.exe'\" | Where-Object { $_.CommandLine -match 'edge-profile4' } | Select-Object -First 1 -ExpandProperty ProcessId)",
+      "Bash(taskkill //F //PID 12876)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" --max-time 5 http://127.0.0.1:3000/consumidor)",
+      "Bash('/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe' --headless=new --disable-gpu --no-sandbox --remote-debugging-port=9222 --user-data-dir=/c/Users/vicen/AppData/Local/Temp/claude/c--hackathon-Michi-Rewards/d2d0e1e8-6e75-4bc0-aef2-269ef1c01019/scratchpad/edge-profile5 about:blank)",
+      "PowerShell(Get-CimInstance Win32_Process -Filter \"Name = 'msedge.exe'\" | Where-Object { $_.CommandLine -match 'edge-profile5' } | Select-Object -First 1 -ExpandProperty ProcessId)",
+      "Bash(taskkill //F //PID 16980)",
+      "Bash('/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe' --headless=new --disable-gpu --no-sandbox --remote-debugging-port=9222 --user-data-dir=/c/Users/vicen/AppData/Local/Temp/claude/c--hackathon-Michi-Rewards/d2d0e1e8-6e75-4bc0-aef2-269ef1c01019/scratchpad/edge-profile6 about:blank)",
+      "PowerShell(Get-CimInstance Win32_Process -Filter \"Name = 'msedge.exe'\" | Where-Object { $_.CommandLine -match 'edge-profile6' } | Select-Object -First 1 -ExpandProperty ProcessId)",
+      "Bash(taskkill //F //PID 12476)"
+    ]
+  }
+}

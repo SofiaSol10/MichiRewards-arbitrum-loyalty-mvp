@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
+import type { OnchainReward } from "./useOnchainRewards";
 import { decodeEventLog } from "viem";
 import { usePublicClient } from "wagmi";
 import { useDeployedContractInfo, useScaffoldEventHistory, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
-import type { OnchainReward } from "./useOnchainRewards";
 
 export type TicketStatus = "active" | "redeemed" | "expired";
 

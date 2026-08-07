@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     MichiPoints: {
-      address: "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
+      address: "0x5fbdb2315678afecb367f032d93f642f64180aa3",
       abi: [
         {
           inputs: [],
@@ -330,6 +330,30 @@ const deployedContracts = {
           inputs: [
             {
               internalType: "address",
+              name: "merchant",
+              type: "address",
+            },
+          ],
+          name: "getMerchantLevel",
+          outputs: [
+            {
+              internalType: "uint8",
+              name: "level",
+              type: "uint8",
+            },
+            {
+              internalType: "string",
+              name: "levelName",
+              type: "string",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
               name: "user",
               type: "address",
             },
@@ -420,6 +444,25 @@ const deployedContracts = {
               internalType: "enum MichiPoints.TicketStatus",
               name: "",
               type: "uint8",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          name: "merchantExperience",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
             },
           ],
           stateMutability: "view",
@@ -786,7 +829,7 @@ const deployedContracts = {
         renounceOwnership: "npm/@openzeppelin/contracts@5.6.1/access/Ownable.sol",
         transferOwnership: "npm/@openzeppelin/contracts@5.6.1/access/Ownable.sol",
       },
-      deployedOnBlock: 2,
+      deployedOnBlock: 1,
     },
   },
 } as const;

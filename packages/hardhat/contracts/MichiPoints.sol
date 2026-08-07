@@ -10,7 +10,8 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 /// (`redeemReward`), generando un ticket de autorizacion con codigo unico y expiracion de
 /// 15 minutos que el comercio valida en caja (`validateTicket`). El nivel "Michi" del cliente
 /// se calcula sobre el historico de puntos ganados, nunca sobre el saldo gastable, para que
-/// canjear beneficios no le haga perder nivel.
+/// canjear beneficios no le haga perder nivel. Los comercios tienen su propio nivel
+/// (`getMerchantLevel`), basado en `merchantExperience`.
 contract MichiPoints is Ownable {
     /// @notice Estado de un ticket de autorizacion generado al canjear un beneficio.
     enum TicketStatus {
@@ -59,6 +60,11 @@ contract MichiPoints is Ownable {
 
     /// @notice Total de puntos recibidos por cada comercio en canjes (metrica de panel).
     mapping(address => uint256) public merchantPointsRedeemed;
+
+    /// @notice Experiencia acumulada de cada comercio, base del nivel de comercio (`getMerchantLevel`).
+    /// Crece un 20% con los puntos otorgados en compras y un 100% con los puntos recibidos en
+    /// canjes, para premiar sobre todo a los comercios cuyos beneficios se usan de verdad.
+    mapping(address => uint256) public merchantExperience;
 
     /// @notice 1 MichiPoint = 1 unidad de moneda local gastada, salvo que el owner ajuste la tasa.
     uint256 public rewardRate = 1;
@@ -153,6 +159,7 @@ contract MichiPoints is Ownable {
         balanceOf[customer] += points;
         totalPointsEarned[customer] += points;
         merchantPointsIssued[msg.sender] += points;
+        merchantExperience[msg.sender] += points / 5;
 
         emit PurchaseRegistered(customer, msg.sender, purchaseAmount, points, block.timestamp);
     }
@@ -232,6 +239,7 @@ contract MichiPoints is Ownable {
         balanceOf[msg.sender] -= reward.costInPoints;
         reward.stock -= 1;
         merchantPointsRedeemed[reward.merchant] += reward.costInPoints;
+        merchantExperience[reward.merchant] += reward.costInPoints;
 
         (ticketId, code) = _generateUniqueCode(msg.sender, rewardId);
         uint256 expiresAt = block.timestamp + TICKET_TTL;
@@ -302,6 +310,33 @@ contract MichiPoints is Ownable {
             return (2, unicode"Michi Explorador");
         }
         return (1, unicode"Michi Bebé");
+    }
+
+    // ==========================================
+    // Nivel de Comercio
+    // ==========================================
+
+    /// @notice Nivel de comercio segun su experiencia acumulada (`merchantExperience`).
+    function getMerchantLevel(address merchant) external view returns (uint8 level, string memory levelName) {
+        return _merchantLevelOf(merchantExperience[merchant]);
+    }
+
+    /// @dev Depende unicamente de `merchantExperience`, nunca directamente de
+    /// `merchantPointsIssued` ni `merchantPointsRedeemed`.
+    function _merchantLevelOf(uint256 experience) internal pure returns (uint8 level, string memory levelName) {
+        if (experience >= 1500) {
+            return (5, "Santuario Michi");
+        }
+        if (experience >= 700) {
+            return (4, "Reino Michi");
+        }
+        if (experience >= 300) {
+            return (3, "Casa Michi Favorita");
+        }
+        if (experience >= 100) {
+            return (2, "Refugio Michi");
+        }
+        return (1, unicode"Rincón Michi");
     }
 
     // ==========================================

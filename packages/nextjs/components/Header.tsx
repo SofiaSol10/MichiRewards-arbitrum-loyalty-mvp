@@ -51,8 +51,9 @@ export const HeaderMenuLinks = () => {
               <Link
                 href={href}
                 passHref
-                className={`${isActive ? "bg-base-300" : ""
-                  } hover:bg-base-300 focus:!bg-base-300 h-full px-4 text-sm gap-2 flex items-center whitespace-nowrap`}
+                className={`${
+                  isActive ? "bg-base-300" : ""
+                } hover:bg-base-300 focus:!bg-base-300 h-full px-4 text-sm gap-2 flex items-center whitespace-nowrap`}
               >
                 {icon}
                 <span>{label}</span>

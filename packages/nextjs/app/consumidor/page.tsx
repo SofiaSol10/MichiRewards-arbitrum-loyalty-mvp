@@ -111,7 +111,8 @@ const ConsumerDashboard: NextPage = () => {
               <div>
                 <h3 className="text-sm font-semibold">Al comprar en locales</h3>
                 <p className="mt-1 text-sm text-base-content/70">
-                  El cajero registra tu compra y te asigna MichiPoints según el monto gastado (por ejemplo, 1 punto por cada S/1 o el monto redondeado).
+                  El cajero registra tu compra y te asigna MichiPoints según el monto gastado (por ejemplo, 1 punto por
+                  cada S/1 o el monto redondeado).
                 </p>
               </div>
               <div>
@@ -122,7 +123,8 @@ const ConsumerDashboard: NextPage = () => {
               </div>
             </div>
             <p className="mt-4 rounded-lg bg-secondary px-3 py-2 text-xs text-secondary-content">
-              Después de cada compra, el comercio te asigna MichiPoints equivalentes al monto de tu compra (o al valor redondeado según sus reglas).
+              Después de cada compra, el comercio te asigna MichiPoints equivalentes al monto de tu compra (o al valor
+              redondeado según sus reglas).
             </p>
           </section>
         </div>
@@ -186,12 +188,13 @@ const ConsumerDashboard: NextPage = () => {
               return (
                 <div
                   key={level.level}
-                  className={`card flex flex-col items-center gap-1 border p-3 text-center ${isCurrent
-                    ? "border-primary bg-primary/10"
-                    : reached
-                      ? "border-success/40 bg-success/5"
-                      : "border-base-300 bg-base-100 opacity-60"
-                    }`}
+                  className={`card flex flex-col items-center gap-1 border p-3 text-center ${
+                    isCurrent
+                      ? "border-primary bg-primary/10"
+                      : reached
+                        ? "border-success/40 bg-success/5"
+                        : "border-base-300 bg-base-100 opacity-60"
+                  }`}
                 >
                   <span className="text-2xl">{level.icon}</span>
                   <p className="text-xs font-semibold">{level.title}</p>

@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import type { Address } from "viem";
 import { MICHI_LEVELS } from "./michiLevels";
 import { useMerchantRewards, useRewardCatalogActions } from "./useOnchainRewards";
+import type { Address } from "viem";
 
 export type BenefitLevel = 1 | 2 | 3 | 4 | 5;
 

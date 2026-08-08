@@ -72,7 +72,11 @@ export const RainbowKitCustomConnectButton = () => {
           {chain.name}
         </span>
       </div>
-      <AddressInfoDropdown address={address} displayName={address} blockExplorerAddressLink={blockExplorerAddressLink} />
+      <AddressInfoDropdown
+        address={address}
+        displayName={address}
+        blockExplorerAddressLink={blockExplorerAddressLink}
+      />
       <AddressQRCodeModal address={address} modalId="qrcode-modal" />
     </>
   );

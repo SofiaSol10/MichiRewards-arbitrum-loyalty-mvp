@@ -1,11 +1,7 @@
 import Link from "next/link";
 import { Gem } from "lucide-react";
 import type { NextPage } from "next";
-import {
-  ArrowLeftIcon,
-  ArrowRightEndOnRectangleIcon,
-  UserPlusIcon,
-} from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, ArrowRightEndOnRectangleIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 import { MichiBrand, MichiShell } from "~~/components/MichiBrand";
 import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 

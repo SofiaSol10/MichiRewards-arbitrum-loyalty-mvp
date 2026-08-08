@@ -113,11 +113,7 @@ export const AddressInfoDropdown = ({
             </li>
           ) : null}
           <li className={selectingNetwork ? "hidden" : ""}>
-            <button
-              className="menu-item text-error h-8 btn-sm flex gap-3 py-3"
-              type="button"
-              onClick={() => logout()}
-            >
+            <button className="menu-item text-error h-8 btn-sm flex gap-3 py-3" type="button" onClick={() => logout()}>
               <ArrowLeftEndOnRectangleIcon className="h-6 w-4 ml-2 sm:ml-0" /> <span>Disconnect</span>
             </button>
           </li>

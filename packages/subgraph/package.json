@@ -1,0 +1,32 @@
+{
+  "name": "@se-2/subgraph",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "abi-copy": "tsx scripts/abi_copy.ts",
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "graph": "graph",
+    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ michi-points",
+    "create-local": "graph create --node http://localhost:8020/ scaffold-eth/michi-points",
+    "remove-local": "graph remove --node http://localhost:8020/ scaffold-eth/michi-points",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 scaffold-eth/michi-points",
+    "local-ship": "yarn abi-copy && yarn codegen && yarn build --network localhost && yarn deploy-local",
+    "test": "graph test -d",
+    "run-node": "cd graph-node && docker compose up",
+    "stop-node": "cd graph-node && docker compose down",
+    "clean-node": "rimraf graph-node/data"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "^0.98.0",
+    "@graphprotocol/graph-ts": "^0.38.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "matchstick-as": "~0.6.0",
+    "rimraf": "^6.0.0",
+    "viem": "2.53.1"
+  }
+}

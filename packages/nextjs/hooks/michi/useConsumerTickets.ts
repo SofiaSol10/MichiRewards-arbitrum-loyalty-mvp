@@ -38,12 +38,14 @@ export function getTicketStatus(ticket: Ticket, now = Date.now()): TicketStatus 
  * `validateTicket`, so nothing here is persisted locally anymore).
  */
 export function useConsumerTickets(address?: string) {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const { data: generatedEvents } = useScaffoldEventHistory({
     contractName: "MichiPoints",
     eventName: "TicketGenerated",
     watch: true,
     fromBlock: 0n,
   });
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const { data: validatedEvents } = useScaffoldEventHistory({
     contractName: "MichiPoints",
     eventName: "TicketValidated",

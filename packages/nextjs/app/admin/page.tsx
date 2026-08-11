@@ -84,6 +84,7 @@ const Admin: NextPage = () => {
   });
 
   // Events
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const { data: purchaseEvents, isLoading: isPurchaseLoading } = useScaffoldEventHistory({
     contractName: "MichiPoints",
     eventName: "PurchaseRegistered",
@@ -91,6 +92,7 @@ const Admin: NextPage = () => {
     fromBlock: 0n,
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const { data: validatedEvents, isLoading: isValidatedLoading } = useScaffoldEventHistory({
     contractName: "MichiPoints",
     eventName: "TicketValidated",
@@ -98,13 +100,15 @@ const Admin: NextPage = () => {
     fromBlock: 0n,
   });
 
-  const { data: registeredEvents, isLoading: isRegisteredLoading } = useScaffoldEventHistory({
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  const { data: registeredEvents } = useScaffoldEventHistory({
     contractName: "MichiPoints",
     eventName: "MerchantRegistered",
     watch: true,
     fromBlock: 0n,
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const { data: removedEvents } = useScaffoldEventHistory({
     contractName: "MichiPoints",
     eventName: "MerchantRemoved",

@@ -168,6 +168,7 @@ const MerchantDashboard: NextPage = () => {
   const saleReward = saleAmount ? BigInt(Math.max(0, Math.floor(Number(saleAmount)))) * rate : 0n;
   const saleXpPreview = (saleReward * 20n) / 100n;
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const { data: purchaseEvents } = useScaffoldEventHistory({
     contractName: "MichiPoints",
     eventName: "PurchaseRegistered",
@@ -175,6 +176,7 @@ const MerchantDashboard: NextPage = () => {
     watch: true,
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const { data: redeemEvents } = useScaffoldEventHistory({
     contractName: "MichiPoints",
     eventName: "TicketGenerated",

@@ -37,6 +37,7 @@ function toOnchainReward(raw: {
 
 /** Every address that was ever registered as a merchant (via constructor or registerMerchant). */
 export function useRegisteredMerchants() {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const { data: registeredEvents } = useScaffoldEventHistory({
     contractName: "MichiPoints",
     eventName: "MerchantRegistered",

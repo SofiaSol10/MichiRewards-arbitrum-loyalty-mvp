@@ -109,28 +109,20 @@ export function useScaffoldWriteContract<TContractName extends ContractName>(
       setIsMining(true);
       const { blockConfirmations, onBlockConfirmation, ...mutateOptions } = options || {};
 
-      // Sin esto, el maxFeePerGas/maxPriorityFeePerGas queda a criterio de la
-      // wallet (MetaMask, la wallet embebida de Privy, etc.). En L2s como
-      // Arbitrum el base fee se mueve todo el tiempo, y algunas wallets
-      // sugieren un fee sin ningún margen — alcanza un micro-movimiento del
-      // base fee entre que se firma y se manda la tx para que la rechacen
-      // con "max fee per gas less than block base fee". viem's estimateFeesPerGas
-      // aplica un colchón (1.2x el base fee) por defecto; se lo pasamos
-      // explícito a la tx para que la wallet lo use en vez de inventar el suyo.
-      const feeOverrides = await getPublicClient(wagmiConfig, { chainId: selectedNetwork.id as AllowedChainIds })
-        ?.estimateFeesPerGas()
-        .catch(() => undefined);
-
       const writeContractObject = {
         abi: deployedContractData.abi as Abi,
         address: deployedContractData.address,
-        ...(feeOverrides
-          ? { maxFeePerGas: feeOverrides.maxFeePerGas, maxPriorityFeePerGas: feeOverrides.maxPriorityFeePerGas }
-          : {}),
         ...variables,
       } as WriteContractVariables<Abi, string, any[], Config, number>;
 
       if (!finalConfig?.disableSimulate) {
+        // Sin gas explícito, simulateContract deja que el nodo use su propio
+        // límite de gas "ilimitado" para el eth_call de prueba — si además le
+        // pasamos un maxFeePerGas real (como hacemos más abajo para la tx
+        // real), el chequeo de balance del nodo multiplica ese fee por ese
+        // límite gigante y tira "insufficient funds" con números absurdos
+        // aunque la wallet tenga de sobra. Por eso acá se simula SIN el
+        // colchón de fee, solo para detectar reverts.
         await simulateContractWriteAndNotifyError({
           wagmiConfig,
           writeContractParams: writeContractObject,
@@ -138,9 +130,32 @@ export function useScaffoldWriteContract<TContractName extends ContractName>(
         });
       }
 
+      // Sin esto, el maxFeePerGas/maxPriorityFeePerGas queda a criterio de la
+      // wallet (MetaMask, la wallet embebida de Privy, etc.). En L2s como
+      // Arbitrum el base fee se mueve todo el tiempo, y algunas wallets
+      // sugieren un fee sin ningún margen — alcanza un micro-movimiento del
+      // base fee entre que se firma y se manda la tx para que la rechacen
+      // con "max fee per gas less than block base fee". viem's estimateFeesPerGas
+      // aplica un colchón (1.2x el base fee) por defecto; se lo pasamos
+      // explícito a la tx real (no a la simulación de arriba) para que la
+      // wallet lo use en vez de inventar el suyo.
+      const feeOverrides = await getPublicClient(wagmiConfig, { chainId: selectedNetwork.id as AllowedChainIds })
+        ?.estimateFeesPerGas()
+        .catch(() => undefined);
+
+      const finalWriteContractObject = (
+        feeOverrides
+          ? {
+              ...writeContractObject,
+              maxFeePerGas: feeOverrides.maxFeePerGas,
+              maxPriorityFeePerGas: feeOverrides.maxPriorityFeePerGas,
+            }
+          : writeContractObject
+      ) as WriteContractVariables<Abi, string, any[], Config, number>;
+
       const makeWriteWithParams = () =>
         wagmiContractWrite.writeContractAsync(
-          writeContractObject,
+          finalWriteContractObject,
           mutateOptions as
             | MutateOptions<
                 WriteContractReturnType,

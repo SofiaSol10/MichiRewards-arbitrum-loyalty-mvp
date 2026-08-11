@@ -158,6 +158,7 @@ contract MichiPoints is Ownable {
     /// @notice El comercio registra una venta y otorga los MichiPoints correspondientes al cliente.
     function registerPurchase(address customer, uint256 purchaseAmount) external onlyMerchant {
         require(customer != address(0), "Direccion de cliente invalida");
+        require(customer != msg.sender, "El comercio no puede ser su propio cliente");
         require(purchaseAmount > 0, "El monto gastado debe ser mayor a 0");
 
         uint256 points = purchaseAmount * rewardRate;

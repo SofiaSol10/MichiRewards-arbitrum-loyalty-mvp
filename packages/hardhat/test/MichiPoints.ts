@@ -105,6 +105,13 @@ describe("MichiPoints", function () {
         "El monto gastado debe ser mayor a 0",
       );
     });
+
+    it("revierte si el comercio intenta registrarse a si mismo como cliente", async function () {
+      const { asDeployer, deployer } = await networkHelpers.loadFixture(deployFixture);
+      await expect(asDeployer.registerPurchase(deployer.address, 100)).to.be.revertedWith(
+        "El comercio no puede ser su propio cliente",
+      );
+    });
   });
 
   describe("registerMerchant / removeMerchant", function () {

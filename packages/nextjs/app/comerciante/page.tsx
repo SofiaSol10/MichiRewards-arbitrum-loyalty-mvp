@@ -308,6 +308,10 @@ const MerchantDashboard: NextPage = () => {
       notification.error("Ingresá una wallet válida o asociá el correo a una wallet primero.");
       return;
     }
+    if (connectedAddress && resolvedSaleAddress.toLowerCase() === connectedAddress.toLowerCase()) {
+      notification.error("No podés registrarte una compra a vos mismo.");
+      return;
+    }
     try {
       await writeMichiPoints({
         functionName: "registerPurchase",

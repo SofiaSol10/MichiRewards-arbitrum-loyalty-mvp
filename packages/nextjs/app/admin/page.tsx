@@ -124,6 +124,10 @@ const Admin: NextPage = () => {
       notification.error("Por favor ingresa la dirección del cliente y el monto de compra.");
       return;
     }
+    if (connectedAddress && mintCustomerAddress.toLowerCase() === connectedAddress.toLowerCase()) {
+      notification.error("No podés registrarte una compra a vos mismo.");
+      return;
+    }
     try {
       await writeMichiPoints({
         functionName: "registerPurchase",

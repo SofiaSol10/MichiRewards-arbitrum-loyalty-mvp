@@ -40,7 +40,7 @@ import {
 } from "~~/hooks/michi";
 import { useScaffoldEventHistory, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import type { MerchantAiContext } from "~~/services/ai/types";
-import { notification } from "~~/utils/scaffold-eth";
+import { getParsedError, notification } from "~~/utils/scaffold-eth";
 
 type Tab = "michipoints" | "beneficios";
 
@@ -285,6 +285,7 @@ const MerchantDashboard: NextPage = () => {
       closeBenefitForm();
     } catch (e: any) {
       console.error("Error al crear el beneficio:", e);
+      notification.error(getParsedError(e));
     }
   };
 
@@ -294,6 +295,7 @@ const MerchantDashboard: NextPage = () => {
       notification.success(benefit.active ? "Beneficio desactivado" : "Beneficio reactivado");
     } catch (e: any) {
       console.error("Error al actualizar el beneficio:", e);
+      notification.error(getParsedError(e));
     }
   };
 
@@ -317,6 +319,7 @@ const MerchantDashboard: NextPage = () => {
       refetchExperience();
     } catch (e: any) {
       console.error("Error al registrar la venta:", e);
+      notification.error(getParsedError(e));
     }
   };
 
@@ -335,6 +338,7 @@ const MerchantDashboard: NextPage = () => {
       refetchRedeemed();
     } catch (e: any) {
       console.error("Error al validar el ticket:", e);
+      notification.error(getParsedError(e));
     }
   };
 

@@ -23,7 +23,7 @@ import {
   useScaffoldWriteContract,
   useTargetNetwork,
 } from "~~/hooks/scaffold-eth";
-import { notification } from "~~/utils/scaffold-eth";
+import { getParsedError, notification } from "~~/utils/scaffold-eth";
 
 const Admin: NextPage = () => {
   const { address: connectedAddress } = useAccount();
@@ -134,6 +134,7 @@ const Admin: NextPage = () => {
       refetchConnectedBalance();
     } catch (e: any) {
       console.error("Error al registrar la compra:", e);
+      notification.error(getParsedError(e));
     }
   };
 
@@ -151,6 +152,7 @@ const Admin: NextPage = () => {
       setTicketCode("");
     } catch (e: any) {
       console.error("Error al validar el ticket:", e);
+      notification.error(getParsedError(e));
     }
   };
 
@@ -169,6 +171,7 @@ const Admin: NextPage = () => {
       refetchIsMerchant();
     } catch (e: any) {
       console.error("Error al registrar comercio:", e);
+      notification.error(getParsedError(e));
     }
   };
 
@@ -187,6 +190,7 @@ const Admin: NextPage = () => {
       refetchIsMerchant();
     } catch (e: any) {
       console.error("Error al remover comercio:", e);
+      notification.error(getParsedError(e));
     }
   };
 
@@ -204,6 +208,7 @@ const Admin: NextPage = () => {
       setNewRewardRate("");
     } catch (e: any) {
       console.error("Error al actualizar la tasa de recompensa:", e);
+      notification.error(getParsedError(e));
     }
   };
 

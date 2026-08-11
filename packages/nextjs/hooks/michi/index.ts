@@ -9,3 +9,6 @@ export * from "./useConsumerOffers";
 export * from "./useConsumerTickets";
 export * from "./useRequireWallet";
 export * from "./useWalletStatus";
+export * from "./useAiChat";
+export * from "./useAiRecommendations";
+export * from "./useAiMerchantTips";

@@ -1532,6 +1532,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@google/generative-ai@npm:^0.24.1":
+  version: 0.24.1
+  resolution: "@google/generative-ai@npm:0.24.1"
+  checksum: 10/992a82e2d4a58d6eb0545254fe05e2da074c08560a9d51fb29c6f2a44db8c66ba44d87bc04e61b3676f5adc9ab94e527f171ee1395edf4ccbead3472fd8efff8
+  languageName: node
+  linkType: hard
+
 "@graphprotocol/graph-cli@npm:^0.98.0":
   version: 0.98.1
   resolution: "@graphprotocol/graph-cli@npm:0.98.1"
@@ -5319,6 +5326,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@se-2/nextjs@workspace:packages/nextjs"
   dependencies:
+    "@google/generative-ai": "npm:^0.24.1"
     "@heroicons/react": "npm:~2.2.0"
     "@privy-io/react-auth": "npm:^3.36.0"
     "@privy-io/wagmi": "npm:^4.0.15"

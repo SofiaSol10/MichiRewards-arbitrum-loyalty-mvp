@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Address, AddressInput } from "@scaffold-ui/components";
-import { Cat } from "lucide-react";
+import { Cat, MessageCircle } from "lucide-react";
 import type { NextPage } from "next";
 import type { Address as AddressType } from "viem";
 import { useAccount } from "wagmi";
@@ -22,6 +22,9 @@ import {
   TrophyIcon,
 } from "@heroicons/react/24/outline";
 import { MichiBrand, MichiShell } from "~~/components/MichiBrand";
+import { AiChatLauncherButton } from "~~/components/michi/ai/AiChatLauncherButton";
+import { DonMichiChat } from "~~/components/michi/ai/DonMichiChat";
+import { DonMichiTips } from "~~/components/michi/ai/DonMichiTips";
 import {
   BENEFIT_LEVELS,
   type Benefit,
@@ -40,6 +43,7 @@ import {
   useScaffoldWriteContract,
   useTargetNetwork,
 } from "~~/hooks/scaffold-eth";
+import type { MerchantAiContext } from "~~/services/ai/types";
 import { notification } from "~~/utils/scaffold-eth";
 
 type Tab = "michipoints" | "beneficios";
@@ -226,6 +230,24 @@ const MerchantDashboard: NextPage = () => {
   }, [purchaseEvents, redeemEvents, connectedAddress]);
 
   const benefitsHook = useMerchantBenefits(connectedAddress);
+  const [aiChatOpen, setAiChatOpen] = useState(false);
+
+  const buildMerchantAiContext = (): MerchantAiContext => ({
+    levelNumber: currentLevel.level,
+    levelTitle: currentLevel.title,
+    experience: experienceNumber,
+    xpToNextLevel: nextLevel ? xpToNext : null,
+    totalPointsIssued: Number(totalGranted),
+    totalPointsRedeemed: Number(totalRedeemed),
+    benefits: benefitsHook.benefits.map(b => ({
+      level: b.level,
+      name: b.name,
+      cost: b.cost,
+      stock: b.stock,
+      active: b.active,
+    })),
+  });
+
   const [benefitForm, setBenefitForm] = useState<{ level: BenefitLevel; editingId?: string } | null>(null);
   const [benefitName, setBenefitName] = useState("");
   const [benefitCost, setBenefitCost] = useState("");
@@ -356,6 +378,7 @@ const MerchantDashboard: NextPage = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <AiChatLauncherButton label="Don Michi" icon={MessageCircle} onClick={() => setAiChatOpen(true)} />
             <span className="badge badge-warning badge-sm gap-1 font-bold">
               {currentLevel.icon} Nivel {currentLevel.level} · {currentLevel.title}
             </span>
@@ -380,6 +403,8 @@ const MerchantDashboard: NextPage = () => {
             Negocio verificado — ya puedes dar MichiPoints y procesar pagos/canjes de tus clientes
           </p>
         )}
+
+        <DonMichiTips context={buildMerchantAiContext()} />
 
         <section className="card mb-5 overflow-hidden border border-base-300 bg-neutral p-5 text-neutral-content shadow-sm sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -831,6 +856,8 @@ const MerchantDashboard: NextPage = () => {
           </div>
         </div>
       )}
+
+      {aiChatOpen && <DonMichiChat buildContext={buildMerchantAiContext} onClose={() => setAiChatOpen(false)} />}
     </div>
   );
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Lock, Sparkles } from "lucide-react";
+import { Check, Lock, MessageCircle, Sparkles } from "lucide-react";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
 import { InformationCircleIcon, ShoppingBagIcon, WalletIcon } from "@heroicons/react/24/outline";
@@ -10,10 +10,14 @@ import { ConsumerHeader } from "~~/components/michi/ConsumerHeader";
 import { OfferCard } from "~~/components/michi/OfferCard";
 import { RedeemConfirmModal } from "~~/components/michi/RedeemConfirmModal";
 import { TicketCodeModal } from "~~/components/michi/TicketCodeModal";
+import { AiChatLauncherButton } from "~~/components/michi/ai/AiChatLauncherButton";
+import { MichiSabioChat } from "~~/components/michi/ai/MichiSabioChat";
+import { RecommendedForYou } from "~~/components/michi/ai/RecommendedForYou";
 import {
   MICHI_PET_LEVELS,
   type Offer,
   type Ticket,
+  getTicketStatus,
   useAllRewards,
   useConsumerOffers,
   useConsumerPetLevel,
@@ -21,6 +25,7 @@ import {
   useRequireWallet,
 } from "~~/hooks/michi";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
+import type { ConsumerAiContext } from "~~/services/ai/types";
 import { getParsedError, notification } from "~~/utils/scaffold-eth";
 
 const ConsumerDashboard: NextPage = () => {
@@ -50,6 +55,31 @@ const ConsumerDashboard: NextPage = () => {
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successTicket, setSuccessTicket] = useState<Ticket | null>(null);
+  const [aiChatOpen, setAiChatOpen] = useState(false);
+
+  const buildConsumerAiContext = (): ConsumerAiContext => ({
+    levelNumber: currentLevel.level,
+    levelTitle: currentLevel.title,
+    totalPointsEarned: totalPointsEarnedNumber,
+    balance: balanceNumber,
+    offers: offers
+      .filter(isUnlocked)
+      .slice(0, 25)
+      .map(o => ({
+        id: o.id,
+        merchantName: o.merchantName,
+        title: o.title,
+        subtitle: o.subtitle,
+        costMP: o.costMP,
+        levelRequired: o.levelRequired,
+      })),
+    recentRedemptions: ticketsHook.tickets.slice(0, 10).map(t => ({
+      offerTitle: t.offerTitle,
+      merchantName: t.merchantName,
+      costMP: t.costMP,
+      status: getTicketStatus(t),
+    })),
+  });
 
   const handleRedeem = (offer: Offer) => setSelectedOffer(offer);
 
@@ -88,10 +118,19 @@ const ConsumerDashboard: NextPage = () => {
       <ConsumerHeader />
 
       <main className="mx-auto max-w-6xl px-4 py-5 sm:px-5 sm:py-6">
-        <h1 className="text-2xl font-bold leading-tight sm:text-[1.75rem]">¡Bienvenido de nuevo! 👋</h1>
-        <p className="mt-1 text-sm text-base-content/70">
-          Aquí tienes el resumen de tu actividad y recompensas en la red.
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold leading-tight sm:text-[1.75rem]">¡Bienvenido de nuevo! 👋</h1>
+            <p className="mt-1 text-sm text-base-content/70">
+              Aquí tienes el resumen de tu actividad y recompensas en la red.
+            </p>
+          </div>
+          <AiChatLauncherButton
+            label="Conversar con Michi Sabio"
+            icon={MessageCircle}
+            onClick={() => setAiChatOpen(true)}
+          />
+        </div>
 
         <div className="mt-5 grid gap-5 sm:gap-6 lg:grid-cols-[1fr_1fr]">
           <section className="rounded-2xl bg-gradient-to-br from-primary to-accent px-6 py-6 text-primary-content shadow-lg sm:py-7">
@@ -158,6 +197,9 @@ const ConsumerDashboard: NextPage = () => {
             </div>
           </div>
         </section>
+
+        <RecommendedForYou context={buildConsumerAiContext()} offers={offers} onRedeem={handleRedeem} />
+
         <section className="mt-5">
           <div className="flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-sm font-bold">
@@ -222,6 +264,7 @@ const ConsumerDashboard: NextPage = () => {
         />
       )}
       {successTicket && <TicketCodeModal ticket={successTicket} justRedeemed onClose={() => setSuccessTicket(null)} />}
+      {aiChatOpen && <MichiSabioChat buildContext={buildConsumerAiContext} onClose={() => setAiChatOpen(false)} />}
     </div>
   );
 };

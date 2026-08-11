@@ -89,7 +89,6 @@ const Admin: NextPage = () => {
     contractName: "MichiPoints",
     eventName: "PurchaseRegistered",
     watch: true,
-    fromBlock: 0n,
   });
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -97,7 +96,6 @@ const Admin: NextPage = () => {
     contractName: "MichiPoints",
     eventName: "TicketValidated",
     watch: true,
-    fromBlock: 0n,
   });
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -105,7 +103,6 @@ const Admin: NextPage = () => {
     contractName: "MichiPoints",
     eventName: "MerchantRegistered",
     watch: true,
-    fromBlock: 0n,
   });
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -113,7 +110,6 @@ const Admin: NextPage = () => {
     contractName: "MichiPoints",
     eventName: "MerchantRemoved",
     watch: true,
-    fromBlock: 0n,
   });
 
   const isOwner = connectedAddress && ownerAddress && connectedAddress.toLowerCase() === ownerAddress.toLowerCase();

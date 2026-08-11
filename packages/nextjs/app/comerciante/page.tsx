@@ -172,7 +172,6 @@ const MerchantDashboard: NextPage = () => {
   const { data: purchaseEvents } = useScaffoldEventHistory({
     contractName: "MichiPoints",
     eventName: "PurchaseRegistered",
-    fromBlock: 0n,
     watch: true,
   });
 
@@ -180,7 +179,6 @@ const MerchantDashboard: NextPage = () => {
   const { data: redeemEvents } = useScaffoldEventHistory({
     contractName: "MichiPoints",
     eventName: "TicketGenerated",
-    fromBlock: 0n,
     watch: true,
   });
 

@@ -43,14 +43,12 @@ export function useConsumerTickets(address?: string) {
     contractName: "MichiPoints",
     eventName: "TicketGenerated",
     watch: true,
-    fromBlock: 0n,
   });
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const { data: validatedEvents } = useScaffoldEventHistory({
     contractName: "MichiPoints",
     eventName: "TicketValidated",
     watch: true,
-    fromBlock: 0n,
   });
 
   const { writeContractAsync } = useScaffoldWriteContract({ contractName: "MichiPoints" });

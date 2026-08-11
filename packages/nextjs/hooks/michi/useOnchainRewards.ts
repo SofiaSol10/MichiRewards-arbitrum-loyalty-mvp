@@ -42,7 +42,6 @@ export function useRegisteredMerchants() {
     contractName: "MichiPoints",
     eventName: "MerchantRegistered",
     watch: true,
-    fromBlock: 0n,
   });
 
   return useMemo(() => {

@@ -34,7 +34,7 @@ async function extractEvent(contract: any, tx: any, eventName: string) {
       }
     })
     .find((event: any) => event?.name === eventName);
-  expect(parsed, `Expected ${eventName} to be emitted`).to.not.be.undefined;
+  expect(parsed, `Expected ${eventName} to be emitted`).to.not.equal(undefined);
   return parsed!.args;
 }
 

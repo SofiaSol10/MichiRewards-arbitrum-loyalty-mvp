@@ -27,3 +27,5 @@ packages/subgraph/graph-node/data/
 packages/subgraph/generated/
 packages/subgraph/build/
 packages/nextjs/.graphclient/
+.vercel
+.env*

@@ -1,10 +1,11 @@
 "use client";
 
 import { Suspense, useEffect } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
-import { EnvelopeIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
 import { MichiBrand, MichiShell } from "~~/components/MichiBrand";
 import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useWalletStatus } from "~~/hooks/michi";
@@ -58,6 +59,14 @@ const ConnectWalletContent = () => {
 
   return (
     <MichiShell>
+      <Link
+        href="/"
+        className="mb-2 inline-flex items-center gap-1.5 text-sm font-medium text-base-content/60 hover:text-base-content"
+      >
+        <ArrowLeftIcon className="size-4" aria-hidden="true" />
+        Volver
+      </Link>
+
       <MichiBrand />
 
       <section aria-labelledby="wallet-title" className="mt-6 rounded-xl bg-base-200 p-4 sm:p-5">
@@ -86,6 +95,14 @@ const ConnectWallet: NextPage = () => (
   <Suspense
     fallback={
       <MichiShell>
+        <Link
+          href="/"
+          className="mb-2 inline-flex items-center gap-1.5 text-sm font-medium text-base-content/60 hover:text-base-content"
+        >
+          <ArrowLeftIcon className="size-4" aria-hidden="true" />
+          Volver
+        </Link>
+
         <MichiBrand />
       </MichiShell>
     }

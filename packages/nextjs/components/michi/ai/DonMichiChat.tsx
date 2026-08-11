@@ -2,6 +2,7 @@
 
 import { ChatModal } from "./ChatModal";
 import { Cat } from "lucide-react";
+import { useAccount } from "wagmi";
 import { useAiChat } from "~~/hooks/michi";
 import type { MerchantAiContext } from "~~/services/ai/types";
 
@@ -17,7 +18,9 @@ type DonMichiChatProps = {
 };
 
 export function DonMichiChat({ buildContext, onClose }: DonMichiChatProps) {
-  const { messages, isSending, sendMessage } = useAiChat("/api/ai/merchant/chat", buildContext);
+  const { address } = useAccount();
+  const storageKey = address ? `michi:chat:merchant:${address.toLowerCase()}` : undefined;
+  const { messages, isSending, sendMessage } = useAiChat("/api/ai/merchant/chat", buildContext, storageKey);
 
   return (
     <ChatModal

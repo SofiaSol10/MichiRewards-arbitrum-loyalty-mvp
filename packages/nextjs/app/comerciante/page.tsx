@@ -25,6 +25,7 @@ import { MichiBrand, MichiShell } from "~~/components/MichiBrand";
 import { AiChatLauncherButton } from "~~/components/michi/ai/AiChatLauncherButton";
 import { DonMichiChat } from "~~/components/michi/ai/DonMichiChat";
 import { DonMichiTips } from "~~/components/michi/ai/DonMichiTips";
+import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import {
   BENEFIT_LEVELS,
   type Benefit,
@@ -37,12 +38,7 @@ import {
   useMerchantLevel,
   useRequireWallet,
 } from "~~/hooks/michi";
-import {
-  useScaffoldEventHistory,
-  useScaffoldReadContract,
-  useScaffoldWriteContract,
-  useTargetNetwork,
-} from "~~/hooks/scaffold-eth";
+import { useScaffoldEventHistory, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import type { MerchantAiContext } from "~~/services/ai/types";
 import { notification } from "~~/utils/scaffold-eth";
 
@@ -107,7 +103,6 @@ const ClientIdentifierField = ({
 const MerchantDashboard: NextPage = () => {
   const authStatus = useRequireWallet();
   const { address: connectedAddress } = useAccount();
-  const { targetNetwork } = useTargetNetwork();
   const [activeTab, setActiveTab] = useState<Tab>("michipoints");
 
   const [businessName, setBusinessName] = useState("Tu negocio");
@@ -382,7 +377,7 @@ const MerchantDashboard: NextPage = () => {
             <span className="badge badge-warning badge-sm gap-1 font-bold">
               {currentLevel.icon} Nivel {currentLevel.level} · {currentLevel.title}
             </span>
-            {connectedAddress && <Address address={connectedAddress} chain={targetNetwork} />}
+            <RainbowKitCustomConnectButton />
           </div>
         </div>
       </header>

@@ -2,6 +2,7 @@
 
 import { ChatModal } from "./ChatModal";
 import { Sparkles } from "lucide-react";
+import { useAccount } from "wagmi";
 import { useAiChat } from "~~/hooks/michi";
 import type { ConsumerAiContext } from "~~/services/ai/types";
 
@@ -17,7 +18,9 @@ type MichiSabioChatProps = {
 };
 
 export function MichiSabioChat({ buildContext, onClose }: MichiSabioChatProps) {
-  const { messages, isSending, sendMessage } = useAiChat("/api/ai/consumer/chat", buildContext);
+  const { address } = useAccount();
+  const storageKey = address ? `michi:chat:consumer:${address.toLowerCase()}` : undefined;
+  const { messages, isSending, sendMessage } = useAiChat("/api/ai/consumer/chat", buildContext, storageKey);
 
   return (
     <ChatModal

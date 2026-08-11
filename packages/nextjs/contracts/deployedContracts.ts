@@ -834,7 +834,7 @@ const deployedContracts = {
   },
   421614: {
     MichiPoints: {
-      address: "0x04bb1ea26cc4b0d54212deed64950257c575336c",
+      address: "0x7858a0ed1b8751f2ecbbcdee2f8f03ff1366c4e6",
       abi: [
         {
           inputs: [],
@@ -1656,7 +1656,7 @@ const deployedContracts = {
         renounceOwnership: "npm/@openzeppelin/contracts@5.6.1/access/Ownable.sol",
         transferOwnership: "npm/@openzeppelin/contracts@5.6.1/access/Ownable.sol",
       },
-      deployedOnBlock: 296078555,
+      deployedOnBlock: 297116647,
     },
   },
 } as const;

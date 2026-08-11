@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { MutateOptions } from "@tanstack/react-query";
 import { Abi, ExtractAbiFunctionNames } from "abitype";
 import { Config, UseWriteContractParameters, useAccount, useConfig, useWriteContract } from "wagmi";
-import { WriteContractErrorType, WriteContractReturnType } from "wagmi/actions";
+import { WriteContractErrorType, WriteContractReturnType, getPublicClient } from "wagmi/actions";
 import { WriteContractVariables } from "wagmi/query";
 import { useSelectedNetwork } from "~~/hooks/scaffold-eth";
 import { useDeployedContractInfo, useTransactor } from "~~/hooks/scaffold-eth";
@@ -109,9 +109,24 @@ export function useScaffoldWriteContract<TContractName extends ContractName>(
       setIsMining(true);
       const { blockConfirmations, onBlockConfirmation, ...mutateOptions } = options || {};
 
+      // Sin esto, el maxFeePerGas/maxPriorityFeePerGas queda a criterio de la
+      // wallet (MetaMask, la wallet embebida de Privy, etc.). En L2s como
+      // Arbitrum el base fee se mueve todo el tiempo, y algunas wallets
+      // sugieren un fee sin ningún margen — alcanza un micro-movimiento del
+      // base fee entre que se firma y se manda la tx para que la rechacen
+      // con "max fee per gas less than block base fee". viem's estimateFeesPerGas
+      // aplica un colchón (1.2x el base fee) por defecto; se lo pasamos
+      // explícito a la tx para que la wallet lo use en vez de inventar el suyo.
+      const feeOverrides = await getPublicClient(wagmiConfig, { chainId: selectedNetwork.id as AllowedChainIds })
+        ?.estimateFeesPerGas()
+        .catch(() => undefined);
+
       const writeContractObject = {
         abi: deployedContractData.abi as Abi,
         address: deployedContractData.address,
+        ...(feeOverrides
+          ? { maxFeePerGas: feeOverrides.maxFeePerGas, maxPriorityFeePerGas: feeOverrides.maxPriorityFeePerGas }
+          : {}),
         ...variables,
       } as WriteContractVariables<Abi, string, any[], Config, number>;
 

@@ -330,6 +330,30 @@ const deployedContracts = {
           inputs: [
             {
               internalType: "address",
+              name: "merchant",
+              type: "address",
+            },
+          ],
+          name: "getMerchantLevel",
+          outputs: [
+            {
+              internalType: "uint8",
+              name: "level",
+              type: "uint8",
+            },
+            {
+              internalType: "string",
+              name: "levelName",
+              type: "string",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
               name: "user",
               type: "address",
             },
@@ -420,6 +444,25 @@ const deployedContracts = {
               internalType: "enum MichiPoints.TicketStatus",
               name: "",
               type: "uint8",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          name: "merchantExperience",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
             },
           ],
           stateMutability: "view",

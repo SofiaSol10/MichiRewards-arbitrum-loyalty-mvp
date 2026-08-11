@@ -94,7 +94,7 @@ export function useConsumerTickets(address?: string) {
       try {
         const decoded = decodeEventLog({ abi: deployedContractData.abi, data: log.data, topics: log.topics });
         if (decoded.eventName === "TicketGenerated") {
-          const args = decoded.args as {
+          const args = decoded.args as unknown as {
             ticketId: string;
             code: string;
             customer: string;

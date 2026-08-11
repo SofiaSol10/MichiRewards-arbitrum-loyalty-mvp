@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
@@ -12,7 +12,7 @@ import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
 type Rol = "comerciante" | "consumidor";
 
-const ConnectWallet: NextPage = () => {
+const ConnectWalletContent = () => {
   const searchParams = useSearchParams();
   const rolParam = searchParams.get("rol");
   // Sin `rol` explícito (llegado desde "Iniciar Sesión" en vez del selector de
@@ -78,5 +78,19 @@ const ConnectWallet: NextPage = () => {
     </MichiShell>
   );
 };
+
+// `useSearchParams()` obliga a envolver en Suspense para el build de producción
+// (Next.js necesita un fallback mientras resuelve los query params en el cliente).
+const ConnectWallet: NextPage = () => (
+  <Suspense
+    fallback={
+      <MichiShell>
+        <MichiBrand subtitle="Cargando…" />
+      </MichiShell>
+    }
+  >
+    <ConnectWalletContent />
+  </Suspense>
+);
 
 export default ConnectWallet;
